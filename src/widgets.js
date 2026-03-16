@@ -6,6 +6,7 @@ import {
   WEEKLY_GOALS,
   PROGRESS_SETTINGS,
 } from "./config.js";
+import { syncAllData, loadFromSupabase } from "./supabase.js";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const TIMES = [
@@ -562,14 +563,30 @@ window.showTab = function (id, el) {
   el.classList.add("active");
 };
 
-function saveData() {
+async function saveData() {
   try {
     localStorage.setItem("jsd2_weeks", JSON.stringify(weekData));
     localStorage.setItem("jsd2_kanban", JSON.stringify(kanban));
     localStorage.setItem("jsd2_wins", JSON.stringify(wins));
+    // Sync to Supabase in production
+    await syncAllData(weekData, kanban, wins);
   } catch (e) {}
 }
-function loadData() {
+async function loadData() {
+  try {
+    // Try loading from Supabase first (production only)
+    const supabaseData = await loadFromSupabase();
+    if (supabaseData) {
+      weekData = supabaseData.weekData;
+      kanban = supabaseData.kanban;
+      wins = supabaseData.wins;
+      return;
+    }
+  } catch (e) {
+    console.error("Failed to load from Supabase:", e);
+  }
+
+  // Fall back to localStorage
   try {
     const w = localStorage.getItem("jsd2_weeks");
     if (w) weekData = JSON.parse(w);
@@ -580,11 +597,18 @@ function loadData() {
   } catch (e) {}
 }
 
-loadData();
-buildSchedule();
-buildKanban();
-buildProgress();
-buildWins();
+// Initialize app - load data then build UI
+loadData().then(() => {
+  buildSchedule();
+  buildKanban();
+  buildProgress();
+  buildWins();
+});
+
+// Sync data when coming back online
+window.addEventListener("online", () => {
+  syncAllData(weekData, kanban, wins);
+});
 
 // Close picker when clicking outside
 document.addEventListener("click", (e) => {
