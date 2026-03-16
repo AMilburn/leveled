@@ -7,7 +7,7 @@
 3. Create `.env`:
    ```
    VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
+   VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
    ```
 
 ## Run Migrations
@@ -21,6 +21,7 @@ This applies all migrations in `supabase/migrations/` to your database.
 ## Schema
 
 Three tables:
+
 - **weeks** - Weekly schedules, mode, progress counts, reflections
 - **kanban_tasks** - Kanban cards with status (backlog/up next/in progress/done)
 - **wins** - Logged accomplishments
@@ -28,6 +29,7 @@ Three tables:
 ## Future Changes
 
 New migrations go in `supabase/migrations/` with timestamp format:
+
 ```
 20260320000000_add_new_feature.sql
 ```

@@ -42,6 +42,7 @@ export const WEEK_TEMPLATES = {
 ```
 
 **Available activity types:**
+
 - `coding`, `depth`, `project`, `stories`, `workout`, `flex`, `review`
 - `stretch-*` (dotted goals) - same types with `stretch-` prefix
 - `blocked` (unavailable slots)
@@ -67,6 +68,7 @@ For backend persistence:
 ## Deployment to Cloudflare Pages
 
 1. **Build your app:**
+
    ```bash
    npm run build
    ```
@@ -82,7 +84,7 @@ For backend persistence:
      - Build output directory: `dist`
    - Add environment variables:
      - `VITE_SUPABASE_URL` = your Supabase URL
-     - `VITE_SUPABASE_ANON_KEY` = your Supabase anon key
+     - `VITE_SUPABASE_PUBLISHABLE_KEY` = your Supabase publishable key
 
 4. **Deploy** - Cloudflare will auto-deploy on every push to main
 

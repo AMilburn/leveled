@@ -3,10 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 const isDev = import.meta.env.DEV;
 
 // Only initialize Supabase in production
+// Uses Supabase Publishable API key (sb_publishable_xxx)
 export const supabase = !isDev
   ? createClient(
       import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY
+      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     )
   : null;
 
