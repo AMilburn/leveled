@@ -1,37 +1,37 @@
 import { createClient } from "@supabase/supabase-js";
 
-const isDev = import.meta.env.DEV;
-
-// Only initialize Supabase in production
-// Uses Supabase Publishable API key (sb_publishable_xxx)
-export const supabase = !isDev
-  ? createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-    )
-  : null;
+// Initialize Supabase
+export const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+);
 
 export let isOnline = true;
 
 // Track online/offline status
-if (!isDev) {
-  window.addEventListener("online", () => {
-    isOnline = true;
-    console.log("Back online - syncing...");
-    // widgets.js will handle syncing when it detects online status
-  });
-  window.addEventListener("offline", () => {
-    isOnline = false;
-    console.log("Offline - using localStorage");
-  });
-}
+window.addEventListener("online", () => {
+  isOnline = true;
+  console.log("Back online - syncing...");
+});
+window.addEventListener("offline", () => {
+  isOnline = false;
+  console.log("Offline - using localStorage");
+});
 
 // Sync all data to Supabase
 export async function syncAllData(weekData, kanban, wins) {
-  if (!supabase || isDev) return false; // Skip in dev
+  if (!supabase) return false;
   if (!isOnline) return false;
 
   try {
+    // Get current user
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) return false;
+
+    const userId = session.user.id;
+
     // Upsert weeks (one row per week)
     const weeksToSync = Object.entries(weekData).map(([key, data]) => {
       const weekNum = parseInt(key.replace("w", ""));
@@ -41,21 +41,26 @@ export async function syncAllData(weekData, kanban, wins) {
         schedule: data.slots,
         counts: data.counts,
         reflection: data.reflection,
+        user_id: userId,
       };
     });
 
     if (weeksToSync.length > 0) {
       const { error: weeksError } = await supabase
         .from("weeks")
-        .upsert(weeksToSync, { onConflict: "week_number" });
+        .upsert(weeksToSync, { onConflict: "week_number,user_id" });
       if (weeksError) throw weeksError;
     }
 
     // Upsert kanban tasks
     if (kanban.length > 0) {
+      const kanbanToSync = kanban.map((task) => ({
+        ...task,
+        user_id: userId,
+      }));
       const { error: kanbanError } = await supabase
         .from("kanban_tasks")
-        .upsert(kanban, { onConflict: "id" });
+        .upsert(kanbanToSync, { onConflict: "id" });
       if (kanbanError) throw kanbanError;
     }
 
@@ -63,6 +68,7 @@ export async function syncAllData(weekData, kanban, wins) {
     if (wins.length > 0) {
       const winsToSync = wins.map((w) => ({
         content: w,
+        user_id: userId,
         created_at: new Date().toISOString(),
       }));
       const { error: winsError } = await supabase
@@ -80,7 +86,7 @@ export async function syncAllData(weekData, kanban, wins) {
 
 // Load all data from Supabase
 export async function loadFromSupabase() {
-  if (!supabase || isDev) return null; // Skip in dev
+  if (!supabase) return null;
   if (!isOnline) return null;
 
   try {

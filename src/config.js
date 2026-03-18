@@ -404,3 +404,24 @@ export const PROGRESS_SETTINGS = {
   coreHoursMax: 20, // Max hours for progress bar (adjust based on your schedule)
   cumulativeGoal: 30, // Target for cumulative totals progress bar
 };
+
+// Default kanban tasks
+export const KANBAN_TASKS = [
+  { id: 1, col: 0, title: "NeetCode: Arrays & Hashing", tag: "coding", note: "Start here. 5 problems." },
+  { id: 2, col: 0, title: "NeetCode: Sliding Window", tag: "coding", note: "Contiguous array — your gap." },
+  { id: 3, col: 0, title: "NeetCode: Two Pointers", tag: "coding", note: "" },
+  { id: 4, col: 0, title: "Live coding (recorded)", tag: "coding", note: "Narrate out loud. Even to yourself." },
+  { id: 5, col: 0, title: "Tech depth: Frontend perf", tag: "depth", note: "CWV, bundle opt, rendering" },
+  { id: 6, col: 0, title: "Tech depth: DB optimization", tag: "depth", note: "Indexing, N+1, query planning" },
+  { id: 7, col: 0, title: "Tech depth: Security (OWASP)", tag: "depth", note: "Auth patterns, XSS/CSRF" },
+  { id: 8, col: 0, title: "Tech depth: Architecture tradeoffs", tag: "depth", note: "CAP theorem, micro vs mono" },
+  { id: 9, col: 0, title: "Story mining (5 projects)", tag: "interview", note: "Scale, decisions, tradeoffs, results" },
+  { id: 10, col: 0, title: "STAR bank (10 questions)", tag: "interview", note: "Leadership, conflict, failure, scale" },
+  { id: 11, col: 0, title: "Pick pet project", tag: "project", note: "LLM/agentic preferred" },
+  { id: 12, col: 0, title: "Pet project: ship v0.1", tag: "project", note: "" },
+  { id: 13, col: 0, title: "Pet project: ship v0.2", tag: "project", note: "" },
+  { id: 14, col: 0, title: "Freeze protocol (write on card)", tag: "mindset", note: '"Brute force first, narrate always"' },
+];
+
+// Default wins (empty initially, user fills these in)
+export const DEFAULT_WINS = [];

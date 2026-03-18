@@ -1,6 +1,6 @@
 # Leveled
 
-A job search and interview prep tracker for senior engineers.
+A personal productivity app for developers. Schedule your week, set goals, track skills, and gamify the grind of self-improvement.
 
 ## Features
 
@@ -12,10 +12,10 @@ A job search and interview prep tracker for senior engineers.
 
 ## Stack
 
-- Vite for local development
-- Vanilla JS (no framework dependencies)
-- localStorage for data persistence
-- Supabase (Postgres) for optional backend
+- React 18 + Vite for development
+- Supabase Auth (GitHub OAuth or email/password)
+- Supabase Postgres for data persistence
+- localStorage as fallback
 - Cloudflare Pages for hosting
 
 ## Quick Start
@@ -52,18 +52,68 @@ Each day has 14 time slots (8am-9pm). Copy `src/config.default.js` as a referenc
 
 ## Data Persistence
 
-- **Week schedules, kanban cards, and wins** are saved to browser localStorage
-- Changes are saved automatically when you click an activity type
-- Data is **per-origin**: local dev and production builds have separate storage
-- Changing `src/config.js` only affects available templates, not saved data
+- **Production:** Data syncs to Supabase (Postgres) automatically
+- **Local dev:** Data saved to browser localStorage (for testing)
+- **Offline:** If connection drops, data saves to localStorage and syncs when back online
+- **Multi-device:** All your data syncs across devices (same Supabase project)
+- Changes are saved automatically
 
-## Setup with Supabase (Optional)
+## Authentication & Setup
 
-For backend persistence:
+This app requires Supabase for authentication and data persistence. Every user needs their own Supabase project.
 
-1. Set up your own Supabase project (see db/README.md)
-2. Configure environment variables in `.env`
-3. Run migrations in Supabase SQL editor
+### For Original Developer (you):
+
+1. **Create Supabase project** at https://supabase.com
+2. **Enable GitHub OAuth** (optional, recommended):
+   - Create a GitHub OAuth App: https://github.com/settings/developers → New OAuth App
+   - Copy the Client ID and Client Secret
+   - In Supabase, go to Authentication → Providers → GitHub
+   - Paste your Client ID and Client Secret
+   - Set the Authorization callback URL to `https://YOUR_PROJECT.supabase.co/auth/v1/callback`
+3. **Set environment variables:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your credentials:
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxx
+   VITE_ALLOWED_USER_EMAIL=your-email@example.com
+   ```
+   Only this email address can access the app.
+4. **Run migrations:**
+   ```bash
+   supabase link --project-ref your-project-ref
+   supabase db push
+   ```
+
+### For Forkers:
+
+If you fork this repo, you'll need your own Supabase project. Only YOUR configured email can access the app.
+
+1. **Create your own Supabase project** at https://supabase.com
+2. **Set up authentication** (choose one or both):
+   - **GitHub OAuth:**
+     - Create a GitHub OAuth App: https://github.com/settings/developers → New OAuth App
+     - Copy the Client ID and Client Secret
+     - In Supabase, go to Authentication → Providers → GitHub and paste the credentials
+     - Set Authorization callback URL to `https://YOUR_PROJECT.supabase.co/auth/v1/callback`
+   - **Email/password:** Enabled by default. You'll sign up through the app's login form with your email.
+3. **Copy `.env.example` to `.env`** and fill in:
+   ```bash
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxx
+   VITE_ALLOWED_USER_EMAIL=your-email@example.com
+   ```
+   **Important:** The `VITE_ALLOWED_USER_EMAIL` must match the email you authenticate with in Supabase. Only that email address can access the app.
+4. **Run migrations:**
+   ```bash
+   supabase link --project-ref your-project-ref
+   supabase db push
+   ```
+5. **Deploy to Cloudflare Pages** with your own credentials
+6. Add the same environment variables to Cloudflare Pages settings
+
+Your data is private to your Supabase project — only you can access it.
 
 ## Deployment to Cloudflare Pages
 
@@ -82,14 +132,21 @@ For backend persistence:
      - Framework: None
      - Build command: `npm run build`
      - Build output directory: `dist`
-   - Add environment variables:
-     - `VITE_SUPABASE_URL` = your Supabase URL
-     - `VITE_SUPABASE_PUBLISHABLE_KEY` = your Supabase publishable key
+   - Add **environment variables** (Settings → Environment variables):
+     - `VITE_SUPABASE_URL` = your Supabase project URL
+     - `VITE_SUPABASE_PUBLISHABLE_KEY` = your Supabase publishable key (starts with `sb_publishable_`)
+     - These must be set for authentication and data sync to work
 
 4. **Deploy** - Cloudflare will auto-deploy on every push to main
 
 That's it! Your app is live.
 
-## Backend (Optional - Supabase)
+## Database Schema
 
-For multi-device sync, see `db/README.md` for Supabase setup. Currently the app uses browser localStorage.
+See `db/README.md` for the Supabase schema and migration guide.
+
+The app stores:
+
+- **weeks** - Weekly schedules, mode, progress counts, reflections
+- **kanban_tasks** - Kanban cards with status (backlog/up next/in progress/done)
+- **wins** - Logged accomplishments with timestamps
