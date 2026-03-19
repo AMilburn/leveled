@@ -48,7 +48,7 @@ export async function syncAllData(weekData, kanban, wins) {
     if (weeksToSync.length > 0) {
       const { error: weeksError } = await supabase
         .from("weeks")
-        .upsert(weeksToSync, { onConflict: "week_number,user_id" });
+        .upsert(weeksToSync, { onConflict: "week_number" });
       if (weeksError) throw weeksError;
     }
 
