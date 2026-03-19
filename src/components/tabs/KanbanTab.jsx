@@ -1,9 +1,8 @@
 import { useState } from 'react';
+import { generateUUID } from '../../utils.js';
 
 const KCOLS = ['backlog', 'up next', 'in progress', 'done'];
 const KCOL_BG = ['#f9f9f9', '#f0f4ff', '#f5f0ff', '#f0fff4'];
-
-let nextTaskId = 100;
 
 const getTagColor = (tag) => {
   const colors = {
@@ -26,7 +25,7 @@ export default function KanbanTab({ kanban, setKanban }) {
   const addTask = () => {
     if (!newTaskTitle.trim()) return;
     setKanban([...kanban, {
-      id: nextTaskId++,
+      id: generateUUID(),
       col: 0,
       title: newTaskTitle,
       tag: newTaskTag,

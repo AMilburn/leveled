@@ -7,6 +7,7 @@ import {
   PROGRESS_SETTINGS,
 } from "./config.js";
 import { syncAllData, loadFromSupabase } from "./supabase.js";
+import { generateUUID } from "./utils.js";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const TIMES = [
@@ -297,83 +298,100 @@ const KTAG_STYLES = {
   mindset: "background:var(--bl50);color:var(--bl800)",
 };
 
-let nextTaskId = 100;
 let kanban = [
   {
-    id: 1,
+    id: "550e8400-e29b-41d4-a716-446655440001",
     col: 0,
     title: "NeetCode: Arrays & Hashing",
     tag: "coding",
     note: "Start here. 5 problems.",
   },
   {
-    id: 2,
+    id: "550e8400-e29b-41d4-a716-446655440002",
     col: 0,
     title: "NeetCode: Sliding Window",
     tag: "coding",
     note: "Contiguous array — your gap.",
   },
-  { id: 3, col: 0, title: "NeetCode: Two Pointers", tag: "coding", note: "" },
   {
-    id: 4,
+    id: "550e8400-e29b-41d4-a716-446655440003",
+    col: 0,
+    title: "NeetCode: Two Pointers",
+    tag: "coding",
+    note: "",
+  },
+  {
+    id: "550e8400-e29b-41d4-a716-446655440004",
     col: 0,
     title: "Live coding (recorded)",
     tag: "coding",
     note: "Narrate out loud. Even to yourself.",
   },
   {
-    id: 5,
+    id: "550e8400-e29b-41d4-a716-446655440005",
     col: 0,
     title: "Tech depth: Frontend perf",
     tag: "depth",
     note: "CWV, bundle opt, rendering",
   },
   {
-    id: 6,
+    id: "550e8400-e29b-41d4-a716-446655440006",
     col: 0,
     title: "Tech depth: DB optimization",
     tag: "depth",
     note: "Indexing, N+1, query planning",
   },
   {
-    id: 7,
+    id: "550e8400-e29b-41d4-a716-446655440007",
     col: 0,
     title: "Tech depth: Security (OWASP)",
     tag: "depth",
     note: "Auth patterns, XSS/CSRF",
   },
   {
-    id: 8,
+    id: "550e8400-e29b-41d4-a716-446655440008",
     col: 0,
     title: "Tech depth: Architecture tradeoffs",
     tag: "depth",
     note: "CAP theorem, micro vs mono",
   },
   {
-    id: 9,
+    id: "550e8400-e29b-41d4-a716-446655440009",
     col: 0,
     title: "Story mining (5 projects)",
     tag: "interview",
     note: "Scale, decisions, tradeoffs, results",
   },
   {
-    id: 10,
+    id: "550e8400-e29b-41d4-a716-446655440010",
     col: 0,
     title: "STAR bank (10 questions)",
     tag: "interview",
     note: "Leadership, conflict, failure, scale",
   },
   {
-    id: 11,
+    id: "550e8400-e29b-41d4-a716-446655440011",
     col: 0,
     title: "Pick pet project",
     tag: "project",
     note: "LLM/agentic preferred",
   },
-  { id: 12, col: 0, title: "Pet project: ship v0.1", tag: "project", note: "" },
-  { id: 13, col: 0, title: "Pet project: ship v0.2", tag: "project", note: "" },
   {
-    id: 14,
+    id: "550e8400-e29b-41d4-a716-446655440012",
+    col: 0,
+    title: "Pet project: ship v0.1",
+    tag: "project",
+    note: "",
+  },
+  {
+    id: "550e8400-e29b-41d4-a716-446655440013",
+    col: 0,
+    title: "Pet project: ship v0.2",
+    tag: "project",
+    note: "",
+  },
+  {
+    id: "550e8400-e29b-41d4-a716-446655440014",
     col: 0,
     title: "Freeze protocol (write on card)",
     tag: "mindset",
@@ -444,7 +462,7 @@ window.addTask = function () {
   const title = input.value.trim();
   if (!title) return;
   const newTask = {
-    id: nextTaskId++,
+    id: generateUUID(),
     col: 0,
     title: title,
     tag: tagSelect.value,
