@@ -67,13 +67,14 @@ export async function syncAllData(weekData, kanban, wins) {
     // Upsert wins
     if (wins.length > 0) {
       const winsToSync = wins.map((w) => ({
-        content: w,
+        id: w.id,
+        content: w.content,
         user_id: userId,
         created_at: new Date().toISOString(),
       }));
       const { error: winsError } = await supabase
         .from("wins")
-        .insert(winsToSync);
+        .upsert(winsToSync, { onConflict: "id" });
       if (winsError) throw winsError;
     }
 
@@ -122,7 +123,7 @@ export async function loadFromSupabase() {
       });
     }
 
-    const wins = winsData ? winsData.map((w) => w.content) : [];
+    const wins = winsData ? winsData.map((w) => ({ id: w.id, content: w.content })) : [];
 
     return {
       weekData,

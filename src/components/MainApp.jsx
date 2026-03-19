@@ -45,7 +45,7 @@ export default function MainApp({ session }) {
     if (!loading) {
       saveData();
     }
-  }, [weekData, kanban, wins]);
+  }, [weekData, kanban, wins, loading]);
 
   async function loadData() {
     try {

@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { generateUUID } from '../../utils.js';
 
 export default function WinsTab({ wins, setWins }) {
   const [newWin, setNewWin] = useState('');
 
   const addWin = () => {
     if (!newWin.trim()) return;
-    setWins([...wins, newWin]);
+    setWins([...wins, { id: generateUUID(), content: newWin }]);
     setNewWin('');
   };
 
@@ -23,8 +24,8 @@ export default function WinsTab({ wins, setWins }) {
         <p style={{ fontSize: '12px', color: '#666' }}>No wins yet — add your first one above.</p>
       ) : (
         <div>
-          {[...wins].reverse().map((win, idx) => (
-            <span key={idx} className="win-chip">{win}</span>
+          {[...wins].reverse().map((win) => (
+            <span key={win.id} className="win-chip">{win.content}</span>
           ))}
         </div>
       )}
