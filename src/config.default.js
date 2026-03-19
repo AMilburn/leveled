@@ -29,8 +29,8 @@ export const WEEK_TEMPLATES = {
       "blocked",
       "blocked",
       "blocked",
-      "flex",
-      "stretch-flex",
+      "applications",
+      "stretch-applications",
       "blocked",
       "blocked",
       "review",
@@ -46,7 +46,7 @@ export const WEEK_TEMPLATES = {
       "project",
       "project",
       "stretch-project",
-      "flex",
+      "applications",
       "blocked",
       "blocked",
       "blocked",
@@ -368,8 +368,10 @@ export const WEEK_TEMPLATES = {
 };
 
 export const MODE_NOTES = {
-  normal: "Normal week: core blocks committed, stretch blocks (dotted) are optional upgrades.",
-  travel: "Travel week: stripped to essentials only. No stretch blocks. Focus on coding and one depth topic.",
+  normal:
+    "Normal week: core blocks committed, stretch blocks (dotted) are optional upgrades.",
+  travel:
+    "Travel week: stripped to essentials only. No stretch blocks. Focus on coding and one depth topic.",
   hard: "Hard week: all stretch blocks removed. Core commitments only. Protect workout and one coding session — momentum matters.",
 };
 
@@ -379,21 +381,36 @@ export const WEEKLY_GOALS = {
     { key: "leetcode", label: "LeetCode problems", goal: 3, color: "#534AB7" },
     { key: "depth", label: "Tech depth sessions", goal: 2, color: "#0F6E56" },
     { key: "project", label: "Pet project hours", goal: 3, color: "#854F0B" },
-    { key: "stories", label: "Interview stories written", goal: 2, color: "#993C1D" },
+    {
+      key: "stories",
+      label: "Interview stories written",
+      goal: 2,
+      color: "#993C1D",
+    },
     { key: "apps", label: "Applications sent", goal: 3, color: "#185FA5" },
   ],
   travel: [
     { key: "leetcode", label: "LeetCode problems", goal: 1, color: "#534AB7" },
     { key: "depth", label: "Tech depth sessions", goal: 1, color: "#0F6E56" },
     { key: "project", label: "Pet project hours", goal: 1, color: "#854F0B" },
-    { key: "stories", label: "Interview stories written", goal: 0, color: "#993C1D" },
+    {
+      key: "stories",
+      label: "Interview stories written",
+      goal: 0,
+      color: "#993C1D",
+    },
     { key: "apps", label: "Applications sent", goal: 1, color: "#185FA5" },
   ],
   hard: [
     { key: "leetcode", label: "LeetCode problems", goal: 2, color: "#534AB7" },
     { key: "depth", label: "Tech depth sessions", goal: 1, color: "#0F6E56" },
     { key: "project", label: "Pet project hours", goal: 1, color: "#854F0B" },
-    { key: "stories", label: "Interview stories written", goal: 1, color: "#993C1D" },
+    {
+      key: "stories",
+      label: "Interview stories written",
+      goal: 1,
+      color: "#993C1D",
+    },
     { key: "apps", label: "Applications sent", goal: 1, color: "#185FA5" },
   ],
 };

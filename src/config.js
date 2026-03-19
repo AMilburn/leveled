@@ -28,7 +28,7 @@ export const WEEK_TEMPLATES = {
       "depth", // 11am
       "free", // 12pm
       "stories", // 1pm
-      "flex", // 2pm
+      "applications", // 2pm
       "blocked", // 3pm
       "stretch-system", // 4pm
       "stretch-project", // 5pm
@@ -47,7 +47,7 @@ export const WEEK_TEMPLATES = {
       "free", // 1pm
       "coding", // 2pm
       "stories", // 3pm
-      "flex", // 4pm
+      "applications", // 4pm
       "blocked", // 5pm
       "blocked", // 6pm
       "blocked", // 7pm
@@ -79,7 +79,7 @@ export const WEEK_TEMPLATES = {
       "system", // 11am
       "depth", // 12pm
       "stories", // 1pm
-      "flex", // 2pm
+      "applications", // 2pm
       "project", // 3pm
       "stretch-coding", // 4pm
       "blocked", // 5pm
@@ -379,47 +379,51 @@ export const MODE_NOTES = {
 // Weekly progress goals (vary by week type) - customize these for your own targets
 export const WEEKLY_GOALS = {
   normal: [
-    { key: "leetcode", label: "LeetCode problems", goal: 3, color: "#534AB7" },
-    { key: "depth", label: "Tech depth sessions", goal: 2, color: "#0F6E56" },
-    { key: "project", label: "Pet project hours", goal: 3, color: "#854F0B" },
-    {
-      key: "stories",
-      label: "Interview stories written",
-      goal: 2,
-      color: "#993C1D",
-    },
-    { key: "apps", label: "Applications sent", goal: 3, color: "#185FA5" },
+    { key: "leetcode", label: "LeetCode problems", goal: 5, color: "#534AB7" },
+    { key: "system", label: "System Design sessions", goal: 3, color: "#7B4FA0" },
+    { key: "depth", label: "Tech depth sessions", goal: 3, color: "#0F6E56" },
+    { key: "project", label: "Pet project", goal: 3, color: "#854F0B" },
+    { key: "stories", label: "Interview stories written", goal: 2, color: "#993C1D" },
+    { key: "apps", label: "Applications sent", goal: 5, color: "#185FA5" },
+    { key: "retrieval", label: "Retrieval sessions", goal: 5, color: "#B8860B" },
+    { key: "workout", label: "Workouts", goal: 4, color: "#27AE60" },
   ],
   travel: [
-    { key: "leetcode", label: "LeetCode problems", goal: 1, color: "#534AB7" },
+    { key: "leetcode", label: "LeetCode problems", goal: 2, color: "#534AB7" },
+    { key: "system", label: "System Design sessions", goal: 1, color: "#7B4FA0" },
     { key: "depth", label: "Tech depth sessions", goal: 1, color: "#0F6E56" },
-    { key: "project", label: "Pet project hours", goal: 1, color: "#854F0B" },
-    {
-      key: "stories",
-      label: "Interview stories written",
-      goal: 0,
-      color: "#993C1D",
-    },
-    { key: "apps", label: "Applications sent", goal: 1, color: "#185FA5" },
+    { key: "project", label: "Pet project", goal: 1, color: "#854F0B" },
+    { key: "stories", label: "Interview stories written", goal: 1, color: "#993C1D" },
+    { key: "apps", label: "Applications sent", goal: 3, color: "#185FA5" },
+    { key: "retrieval", label: "Retrieval sessions", goal: 3, color: "#B8860B" },
+    { key: "workout", label: "Workouts", goal: 3, color: "#27AE60" },
   ],
   hard: [
     { key: "leetcode", label: "LeetCode problems", goal: 2, color: "#534AB7" },
+    { key: "system", label: "System Design sessions", goal: 1, color: "#7B4FA0" },
     { key: "depth", label: "Tech depth sessions", goal: 1, color: "#0F6E56" },
-    { key: "project", label: "Pet project hours", goal: 1, color: "#854F0B" },
-    {
-      key: "stories",
-      label: "Interview stories written",
-      goal: 1,
-      color: "#993C1D",
-    },
+    { key: "project", label: "Pet project", goal: 1, color: "#854F0B" },
+    { key: "stories", label: "Interview stories written", goal: 1, color: "#993C1D" },
     { key: "apps", label: "Applications sent", goal: 1, color: "#185FA5" },
+    { key: "retrieval", label: "Retrieval sessions", goal: 3, color: "#B8860B" },
+    { key: "workout", label: "Workouts", goal: 3, color: "#27AE60" },
   ],
 };
 
 // Core hours progress bar settings
 export const PROGRESS_SETTINGS = {
-  coreHoursMax: 20, // Max hours for progress bar (adjust based on your schedule)
-  cumulativeGoal: 30, // Target for cumulative totals progress bar
+  normal: {
+    coreHoursMax: 21,
+    cumulativeGoal: 210, // 10 weeks of normal week targets
+  },
+  travel: {
+    coreHoursMax: 11,
+    cumulativeGoal: 210,
+  },
+  hard: {
+    coreHoursMax: 12,
+    cumulativeGoal: 210,
+  },
 };
 
 // Default kanban tasks
@@ -524,38 +528,41 @@ export const DEFAULT_WINS = [];
 // Weekly hour goals by week type
 export const WEEKLY_HOUR_GOALS = {
   normal: {
-    totalHours: 24,
+    totalHours: 21,
     breakdown: {
-      coding: 5,
+      coding: 4,
       system: 3,
       depth: 3,
-      project: 4,
+      project: 3,
       stories: 2,
-      flex: 3,
+      applications: 2,
+      retrieval: 3,
       workout: 4,
     },
   },
   travel: {
-    totalHours: 8,
+    totalHours: 11,
     breakdown: {
       coding: 2,
       system: 1,
       depth: 1,
       project: 1,
       stories: 1,
-      flex: 0,
+      applications: 2,
+      retrieval: 1,
       workout: 2,
     },
   },
   hard: {
     totalHours: 12,
     breakdown: {
-      coding: 3,
-      system: 2,
+      coding: 2,
+      system: 1,
       depth: 1,
       project: 1,
       stories: 1,
-      flex: 1,
+      applications: 1,
+      retrieval: 2,
       workout: 3,
     },
   },

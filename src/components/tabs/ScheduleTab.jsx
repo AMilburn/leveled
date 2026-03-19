@@ -34,7 +34,7 @@ const TYPE_LABELS = {
   system: "System Design",
   project: "Pet project",
   stories: "Interview prep",
-  flex: "Applications",
+  applications: "Applications",
   review: "Light review",
   networking: "Networking",
   retrieval: "Retrieval",
@@ -44,7 +44,7 @@ const TYPE_LABELS = {
   "stretch-project": "+ Project",
   "stretch-stories": "+ Stories",
   "stretch-workout": "+ Workout",
-  "stretch-flex": "+ Applications",
+  "stretch-applications": "+ Applications",
   "stretch-networking": "+ Networking",
   "stretch-retrieval": "+ Retrieval",
 };
@@ -59,7 +59,7 @@ const TYPE_COLORS = {
   system: "#e8d9f5",
   project: "#f5e8d0",
   stories: "#f0d9d0",
-  flex: "#d9e8f5",
+  applications: "#d9e8f5",
   review: "#f1efe8",
   networking: "#e0e8f5",
   retrieval: "#f0e8d9",
@@ -69,7 +69,7 @@ const TYPE_COLORS = {
   "stretch-project": "#fff",
   "stretch-stories": "#fff",
   "stretch-workout": "#fff",
-  "stretch-flex": "#fff",
+  "stretch-applications": "#fff",
   "stretch-networking": "#fff",
   "stretch-retrieval": "#fff",
 };
@@ -278,7 +278,7 @@ export default function ScheduleTab({
                 if (t.includes("networking")) return "bl";
                 if (t.includes("retrieval")) return "am";
                 if (t.includes("workout")) return "gr";
-                if (t.includes("flex")) return "bl";
+                if (t.includes("applications")) return "bl";
                 return "gy";
               };
               const tc = getTypeColor(type);
@@ -352,7 +352,7 @@ export default function ScheduleTab({
               "networking",
               "retrieval",
               "workout",
-              "flex",
+              "applications",
               "review",
               "free",
               "stretch-coding",
@@ -374,7 +374,7 @@ export default function ScheduleTab({
                 if (t.includes("networking")) return "bl";
                 if (t.includes("retrieval")) return "am";
                 if (t.includes("workout")) return "gr";
-                if (t.includes("flex")) return "bl";
+                if (t.includes("applications")) return "bl";
                 return "gy";
               };
               const tc = getTypeColor(tp);
@@ -465,7 +465,11 @@ export default function ScheduleTab({
 
       <div
         className="legend"
-        style={{ marginTop: "2rem", gap: "16px", justifyContent: "flex-start" }}
+        style={{
+          marginTop: "2rem",
+          gap: "16px",
+          justifyContent: "flex-start",
+        }}
       >
         {[
           "coding",
@@ -476,7 +480,7 @@ export default function ScheduleTab({
           "networking",
           "retrieval",
           "workout",
-          "flex",
+          "applications",
           "review",
         ].map((type) => (
           <div
