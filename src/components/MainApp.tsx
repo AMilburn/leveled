@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import { syncAllData, loadFromSupabase } from "../supabase";
-import { WEEK_TEMPLATES, KANBAN_TASKS, DEFAULT_WINS, WeekData, Win, Week } from "../config.ts";
+import { WEEK_TEMPLATES, KANBAN_TASKS, DEFAULT_WINS, WeekData, Win, Week } from "../config";
 import ScheduleTab from "./tabs/ScheduleTab";
 import KanbanTab from "./tabs/KanbanTab";
 import ProgressTab from "./tabs/ProgressTab";

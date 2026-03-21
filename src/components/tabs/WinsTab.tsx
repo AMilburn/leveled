@@ -30,6 +30,7 @@ export default function WinsTab({
           value={newWin}
           onChange={(e) => setNewWin(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addWin()}
+          autoComplete="off"
         />
         <button
           onClick={addWin}

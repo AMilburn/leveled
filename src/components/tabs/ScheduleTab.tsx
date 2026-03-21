@@ -7,7 +7,6 @@ import {
   SCHEDULE_CONFIG,
   CORE_ACTIVITIES,
   ALL_ACTIVITIES,
-  ACTIVITY_COLOR_CODES,
   Week,
   WeekData,
   ActivityType,
@@ -218,29 +217,54 @@ export default function ScheduleTab({
               const type = wd.slots[d][ti];
               const isSelected =
                 pickerSlot?.day === d && pickerSlot?.time === ti;
-              const getColorCode = (t: string) => {
-                const baseActivity = t.replace("stretch-", "") as typeof CORE_ACTIVITIES[number];
-                return ACTIVITY_COLOR_CODES[baseActivity] || "gy";
+              const getStretchColor = (t: string): string => {
+                const baseActivity = t.replace("stretch-", "");
+                const color = Object.entries(SCHEDULE_CONFIG.typeColors).find(
+                  ([key]) => key === baseActivity,
+                )?.[1];
+                return color || SCHEDULE_CONFIG.typeColors.free;
               };
-              const tc = getColorCode(type);
+              const getDarkenedStretchColor = (t: string): string => {
+                const colorMap: Record<string, string> = {
+                  coding: "#5a52a8",
+                  depth: "#1a8a7f",
+                  system: "#a879a8",
+                  project: "#cc8a3a",
+                  stories: "#b85a46",
+                  workout: "#2d8a2d",
+                  applications: "#3a5a9a",
+                  networking: "#3a5a9a",
+                  retrieval: "#8a7a5a",
+                };
+                const baseActivity = t.replace("stretch-", "");
+                return colorMap[baseActivity] || "#333";
+              };
               return (
                 <div
                   key={`${d}-${ti}`}
-                  className={`slot ${type}`}
                   onClick={() => setPickerSlot({ day: d, time: ti })}
                   style={{
+                    height: "32px",
+                    borderRadius: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "9px",
+                    fontWeight: "500",
+                    textAlign: "center",
+                    lineHeight: "1.2",
+                    padding: "2px 3px",
+                    cursor: "pointer",
+                    userSelect: "none",
                     background: isSelected
                       ? "#ddd"
                       : SCHEDULE_CONFIG.typeColors[type],
                     border: isSelected
                       ? "2px solid #333"
                       : type.startsWith("stretch-")
-                        ? `1.5px dashed var(--${tc}600)`
+                        ? `1.5px dashed ${getStretchColor(type)}`
                         : "none",
-                    padding: "4px",
-                    textAlign: "center",
-                    fontSize: "9px",
-                    cursor: "pointer",
+                    color: type.startsWith("stretch-") ? getDarkenedStretchColor(type) : "#222",
                   }}
                 >
                   {SCHEDULE_CONFIG.typeLabels[type]}
@@ -286,11 +310,29 @@ export default function ScheduleTab({
           >
             {ALL_ACTIVITIES.map((tp) => {
               const isStretch = tp.startsWith("stretch-");
-              const getTypeColor = (t: string) => {
-                const baseActivity = t.replace("stretch-", "") as typeof CORE_ACTIVITIES[number];
-                return ACTIVITY_COLOR_CODES[baseActivity] || "gy";
+              const getStretchColor = (t: string): string => {
+                const baseActivity = t.replace("stretch-", "");
+                const color = Object.entries(SCHEDULE_CONFIG.typeColors).find(
+                  ([key]) => key === baseActivity,
+                )?.[1];
+                return color || SCHEDULE_CONFIG.typeColors.free;
               };
-              const tc = getTypeColor(tp);
+              const getDarkenedStretchColor = (t: string): string => {
+                const colorMap: Record<string, string> = {
+                  coding: "#5a52a8",
+                  depth: "#1a8a7f",
+                  system: "#a879a8",
+                  project: "#cc8a3a",
+                  stories: "#b85a46",
+                  workout: "#2d8a2d",
+                  applications: "#3a5a9a",
+                  networking: "#3a5a9a",
+                  retrieval: "#8a7a5a",
+                };
+                const baseActivity = t.replace("stretch-", "");
+                return colorMap[baseActivity] || "#333";
+              };
+              const stretchColor = isStretch ? getStretchColor(tp) : undefined;
               return (
                 <button
                   key={tp}
@@ -299,13 +341,15 @@ export default function ScheduleTab({
                   }
                   style={{
                     padding: "6px 8px",
-                    fontSize: "11px",
+                    fontSize: "9px",
+                    fontWeight: "500",
+                    textAlign: "center",
+                    lineHeight: "1.2",
                     background: SCHEDULE_CONFIG.typeColors[tp],
-                    border: isStretch ? `1.5px dashed var(--${tc}600)` : "none",
+                    border: isStretch ? `1.5px dashed ${stretchColor}` : "none",
                     cursor: "pointer",
                     borderRadius: "3px",
-                    color: isStretch ? `var(--${tc}600)` : "#222",
-                    fontWeight: isStretch ? "500" : "400",
+                    color: isStretch ? getDarkenedStretchColor(tp) : "#222",
                   }}
                 >
                   {SCHEDULE_CONFIG.typeLabels[tp] || tp}
