@@ -1,21 +1,21 @@
 # Leveled
 
-A personal productivity app for developers. Schedule your week, set goals, track skills, and gamify the grind of self-improvement.
+A personal tracker for developers who are building toward something. Weekly scheduling, goal tracking, and visualised progress. For developers who work better with a plan. Small wins compound. Start tracking them.
 
 ## Features
 
-- **Weekly schedule** with core/stretch blocks and week types (normal, travel, hard)
-- **Kanban board** for prep tasks (backlog → done)
-- **Progress tracker** with weekly counts and reflections
-- **Wins journal** to log every win
-- **Customizable templates** for your own schedule
+- **Weekly schedule** with core and stretch targets across every area of your practice
+- **Kanban board** to move tasks from backlog to done
+- **Progress tracker** with weekly and cumulative counts, plus space to reflect
+- **Wins journal** to capture every small victory
+- **Customisable templates** for your own goals and routine
 
 ## Stack
 
-- React 18 + Vite
+- React 18 + TypeScript + Vite
 - Supabase Auth (GitHub OAuth or email/password)
-- Supabase Postgres
-- Cloudflare Pages
+- Supabase Postgres database
+- Cloudflare Pages deployment
 
 ## Quick Start
 
@@ -28,7 +28,7 @@ Open http://localhost:5174. Data auto-saves to localStorage.
 
 ## Setup
 
-1. **Create Supabase project** at https://supabase.com
+1. **Create your own Supabase project** at https://supabase.com
 
 2. **Configure authentication:**
    - **GitHub OAuth (optional):** Create OAuth App at https://github.com/settings/developers, add credentials to Supabase Authentication → Providers → GitHub
@@ -53,9 +53,9 @@ Open http://localhost:5174. Data auto-saves to localStorage.
 
 ## Customizing Your Schedule
 
-Edit `src/config.js` to customize weekly templates:
+Edit `src/config.ts` to customize weekly templates:
 
-```javascript
+```typescript
 export const WEEK_TEMPLATES = {
   normal: {
     Mon: ['workout', 'coding', 'depth', ...],

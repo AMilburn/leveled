@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
+import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import { syncAllData, loadFromSupabase } from "../supabase";
-import { WEEK_TEMPLATES, KANBAN_TASKS, DEFAULT_WINS } from "../config.js";
+import { WEEK_TEMPLATES, KANBAN_TASKS, DEFAULT_WINS, WeekData, Win, Week } from "../config.ts";
 import ScheduleTab from "./tabs/ScheduleTab";
 import KanbanTab from "./tabs/KanbanTab";
 import ProgressTab from "./tabs/ProgressTab";
 import WinsTab from "./tabs/WinsTab";
 
-function getCurrentWeek() {
+function getCurrentWeek(): number {
   const baseDate = new Date(2026, 2, 15);
   const today = new Date();
 
@@ -19,18 +20,18 @@ function getCurrentWeek() {
   const todayDay = today.getDay() || 7;
   todayMon.setDate(today.getDate() - (todayDay - 1));
 
-  const timeDiff = todayMon - baseMon;
+  const timeDiff = todayMon.getTime() - baseMon.getTime();
   const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
   return Math.floor(daysDiff / 7);
 }
 
-export default function MainApp({ session }) {
+export default function MainApp({ session: _session }: { session: Session }) {
   const [activeTab, setActiveTab] = useState("schedule");
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeek());
   const [pWeek, setPWeek] = useState(getCurrentWeek());
-  const [weekData, setWeekData] = useState({});
+  const [weekData, setWeekData] = useState<WeekData>({});
   const [kanban, setKanban] = useState(KANBAN_TASKS);
-  const [wins, setWins] = useState(DEFAULT_WINS);
+  const [wins, setWins] = useState<Win[]>(DEFAULT_WINS);
   const [loading, setLoading] = useState(true);
 
   // Load data on mount
@@ -47,7 +48,7 @@ export default function MainApp({ session }) {
     }
   }, [weekData, kanban, wins, loading]);
 
-  async function loadData() {
+  async function loadData(): Promise<void> {
     try {
       const supabaseData = await loadFromSupabase();
       if (supabaseData && Object.keys(supabaseData.weekData).length > 0) {
@@ -87,7 +88,7 @@ export default function MainApp({ session }) {
     setLoading(false);
   }
 
-  async function saveData() {
+  async function saveData(): Promise<void> {
     try {
       localStorage.setItem("jsd2_weeks", JSON.stringify(weekData));
       localStorage.setItem("jsd2_kanban", JSON.stringify(kanban));
@@ -96,11 +97,11 @@ export default function MainApp({ session }) {
     } catch (e) {}
   }
 
-  function handleOnline() {
+  function handleOnline(): void {
     syncAllData(weekData, kanban, wins);
   }
 
-  function getOrCreateWeek(weekNum) {
+  function getOrCreateWeek(weekNum: number): Week {
     if (!weekData[`w${weekNum}`]) {
       setWeekData((prev) => ({
         ...prev,
@@ -112,10 +113,10 @@ export default function MainApp({ session }) {
         },
       }));
     }
-    return weekData[`w${weekNum}`] || {};
+    return weekData[`w${weekNum}`] || { mode: "normal", slots: {}, counts: {}, reflection: "" };
   }
 
-  async function handleLogout() {
+  async function handleLogout(): Promise<void> {
     await supabase.auth.signOut();
   }
 

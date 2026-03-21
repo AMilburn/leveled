@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import LoginPage from "./components/LoginPage";
 import MainApp from "./components/MainApp";
@@ -6,7 +7,7 @@ import MainApp from "./components/MainApp";
 const ALLOWED_EMAIL = import.meta.env.VITE_ALLOWED_USER_EMAIL;
 
 export default function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
 
@@ -35,7 +36,7 @@ export default function App() {
     return () => subscription?.unsubscribe();
   }, []);
 
-  function checkAccess(session) {
+  function checkAccess(session: Session) {
     if (ALLOWED_EMAIL && session.user.email !== ALLOWED_EMAIL) {
       setAccessDenied(true);
       setSession(null);

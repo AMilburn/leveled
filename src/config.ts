@@ -2,6 +2,54 @@
 // Edit this file to customize your weekly schedules
 // This file is kept in git for your personal setup
 
+// Type definitions
+export interface Win {
+  id: string;
+  content: string;
+}
+
+export interface KanbanTask {
+  id: string;
+  col: number;
+  title: string;
+  tag: string;
+  note: string;
+}
+
+export type WeekMode = "normal" | "travel" | "hard";
+
+export type ActivityType = keyof typeof SCHEDULE_CONFIG["typeLabels"];
+
+export interface GoalDefinition {
+  key: string;
+  label: string;
+  goal: number;
+  color: string;
+}
+
+export interface Week {
+  mode: WeekMode;
+  slots: Record<string, ActivityType[]>;
+  counts?: Record<string, number>;
+  reflection?: string;
+}
+
+export interface WeekData {
+  [key: string]: Week;
+}
+
+// Kanban task tags with styling
+// Customize these tags to organize your tasks. Each tag has a background color and text color.
+export const KANBAN_TAGS = [
+  { name: "coding", bg: "#ede7f6", text: "#512da8" },
+  { name: "depth", bg: "#e0f2f1", text: "#00695c" },
+  { name: "project", bg: "#f3e5f5", text: "#6a1b9a" },
+  { name: "interview", bg: "#fff3e0", text: "#e65100" },
+  { name: "mindset", bg: "#e3f2fd", text: "#1565c0" },
+] as const;
+
+export type KanbanTag = (typeof KANBAN_TAGS)[number]["name"];
+
 export const WEEK_TEMPLATES = {
   normal: {
     Mon: [
@@ -377,6 +425,11 @@ export const MODE_NOTES = {
 };
 
 // Weekly progress goals (vary by week type) - customize these for your own targets
+// Number of weeks for cumulative goal calculation
+// Used in ProgressTab to calculate long-term targets (e.g., 5 LeetCode problems/week × 13 weeks = 65 total)
+// Customize this based on your planning horizon (e.g., quarterly = 13, half-year = 26, yearly = 52)
+export const CUMULATIVE_GOAL_WEEKS = 13;
+
 export const WEEKLY_GOALS = {
   normal: [
     { key: "leetcode", label: "LeetCode problems", goal: 5, color: "#534AB7" },
@@ -573,3 +626,122 @@ export const WEEKLY_HOUR_GOALS = {
     },
   },
 };
+
+// Core activity types (non-stretch)
+export const CORE_ACTIVITIES = [
+  "coding",
+  "depth",
+  "system",
+  "project",
+  "stories",
+  "networking",
+  "retrieval",
+  "workout",
+  "applications",
+  "review",
+] as const;
+
+// All activity types including stretch variants
+export const ALL_ACTIVITIES = [
+  "coding",
+  "depth",
+  "system",
+  "project",
+  "stories",
+  "networking",
+  "retrieval",
+  "workout",
+  "applications",
+  "review",
+  "free",
+  "stretch-coding",
+  "stretch-depth",
+  "stretch-system",
+  "stretch-project",
+  "stretch-stories",
+  "stretch-networking",
+  "stretch-retrieval",
+  "blocked",
+] as const;
+
+// Activity type to CSS color code mapping (for core activities)
+export const ACTIVITY_COLOR_CODES: Record<(typeof CORE_ACTIVITIES)[number], string> = {
+  coding: "pu",
+  depth: "te",
+  system: "pu",
+  project: "am",
+  stories: "co",
+  networking: "bl",
+  retrieval: "am",
+  workout: "gr",
+  applications: "bl",
+  review: "gy",
+} as const;
+
+// Schedule configuration
+export const SCHEDULE_CONFIG = {
+  days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  times: [
+    "8am",
+    "9am",
+    "10am",
+    "11am",
+    "12pm",
+    "1pm",
+    "2pm",
+    "3pm",
+    "4pm",
+    "5pm",
+    "6pm",
+    "7pm",
+    "8pm",
+    "9pm",
+    "10pm",
+  ],
+  typeLabels: {
+    free: "",
+    blocked: "–",
+    workout: "Workout",
+    coding: "Coding",
+    depth: "Tech depth",
+    system: "System Design",
+    project: "Pet project",
+    stories: "Interview prep",
+    applications: "Applications",
+    review: "Light review",
+    networking: "Networking",
+    retrieval: "Retrieval",
+    "stretch-coding": "+ Coding",
+    "stretch-depth": "+ Depth",
+    "stretch-system": "+ System Design",
+    "stretch-project": "+ Project",
+    "stretch-stories": "+ Stories",
+    "stretch-workout": "+ Workout",
+    "stretch-applications": "+ Applications",
+    "stretch-networking": "+ Networking",
+    "stretch-retrieval": "+ Retrieval",
+  } as const,
+  typeColors: {
+    free: "#f5f5f5",
+    blocked: "#e8e8e8",
+    workout: "#d4f1d4",
+    coding: "#e8e0f5",
+    depth: "#d0f0ed",
+    system: "#e8d9f5",
+    project: "#f5e8d0",
+    stories: "#f0d9d0",
+    applications: "#d9e8f5",
+    review: "#f1efe8",
+    networking: "#e0e8f5",
+    retrieval: "#f0e8d9",
+    "stretch-coding": "#fff",
+    "stretch-depth": "#fff",
+    "stretch-system": "#fff",
+    "stretch-project": "#fff",
+    "stretch-stories": "#fff",
+    "stretch-workout": "#fff",
+    "stretch-applications": "#fff",
+    "stretch-networking": "#fff",
+    "stretch-retrieval": "#fff",
+  } as const,
+} as const;

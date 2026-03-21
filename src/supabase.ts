@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { WeekData, KanbanTask, Win } from "./config";
 
 // Initialize Supabase
 export const supabase = createClient(
@@ -19,7 +20,7 @@ window.addEventListener("offline", () => {
 });
 
 // Sync all data to Supabase
-export async function syncAllData(weekData, kanban, wins) {
+export async function syncAllData(weekData: WeekData, kanban: KanbanTask[], wins: Win[]): Promise<boolean> {
   if (!supabase) return false;
   if (!isOnline) return false;
 
@@ -86,7 +87,7 @@ export async function syncAllData(weekData, kanban, wins) {
 }
 
 // Load all data from Supabase
-export async function loadFromSupabase() {
+export async function loadFromSupabase(): Promise<{ weekData: WeekData; kanban: KanbanTask[]; wins: Win[] } | null> {
   if (!supabase) return null;
   if (!isOnline) return null;
 
@@ -106,12 +107,12 @@ export async function loadFromSupabase() {
     // Load wins
     const { data: winsData, error: winsError } = await supabase
       .from("wins")
-      .select("content")
+      .select("id, content")
       .order("created_at", { ascending: false });
     if (winsError) throw winsError;
 
     // Transform back to app format
-    const weekData = {};
+    const weekData: WeekData = {};
     if (weeksData) {
       weeksData.forEach((week) => {
         weekData[`w${week.week_number}`] = {
@@ -123,7 +124,7 @@ export async function loadFromSupabase() {
       });
     }
 
-    const wins = winsData ? winsData.map((w) => ({ id: w.id, content: w.content })) : [];
+    const wins: Win[] = winsData ? winsData.map((w) => ({ id: w.id, content: w.content })) : [];
 
     return {
       weekData,

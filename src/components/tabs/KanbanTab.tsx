@@ -1,24 +1,21 @@
 import { useState } from 'react';
-import { generateUUID } from '../../utils.js';
+import { KanbanTask, KANBAN_TAGS } from '../../config';
+import { generateUUID } from '../../utils.ts';
 
 const KCOLS = ['backlog', 'up next', 'in progress', 'done'];
 const KCOL_BG = ['#f9f9f9', '#f0f4ff', '#f5f0ff', '#f0fff4'];
 
-const getTagColor = (tag) => {
-  const colors = {
-    coding: { bg: '#ede7f6', text: '#512da8' },
-    depth: { bg: '#e0f2f1', text: '#00695c' },
-    project: { bg: '#f3e5f5', text: '#6a1b9a' },
-    interview: { bg: '#fff3e0', text: '#e65100' },
-    mindset: { bg: '#e3f2fd', text: '#1565c0' },
-  };
-  return colors[tag] || { bg: '#f0f0f0', text: '#333' };
-};
+// Build tag color map from KANBAN_TAGS config
+const KANBAN_TAG_COLORS = Object.fromEntries(
+  KANBAN_TAGS.map(tag => [tag.name, { bg: tag.bg, text: tag.text }])
+) as Record<string, { bg: string; text: string }>;
 
-export default function KanbanTab({ kanban, setKanban }) {
+const getTagColor = (tag: string) => KANBAN_TAG_COLORS[tag] || { bg: '#f0f0f0', text: '#333' };
+
+export default function KanbanTab({ kanban, setKanban }: { kanban: KanbanTask[]; setKanban: (kanban: KanbanTask[]) => void }) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskTag, setNewTaskTag] = useState('coding');
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editNote, setEditNote] = useState('');
 
@@ -34,22 +31,22 @@ export default function KanbanTab({ kanban, setKanban }) {
     setNewTaskTitle('');
   };
 
-  const moveTask = (id, direction) => {
+  const moveTask = (id: string, direction: number) => {
     setKanban(kanban.map(t => t.id === id ? { ...t, col: Math.max(0, Math.min(3, t.col + direction)) } : t));
   };
 
-  const startEdit = (task) => {
+  const startEdit = (task: KanbanTask) => {
     setEditingId(task.id);
     setEditTitle(task.title);
     setEditNote(task.note || '');
   };
 
-  const saveEdit = (id) => {
+  const saveEdit = (id: string) => {
     setKanban(kanban.map(t => t.id === id ? { ...t, title: editTitle, note: editNote } : t));
     setEditingId(null);
   };
 
-  const deleteTask = (id) => {
+  const deleteTask = (id: string) => {
     if (confirm('Delete this task?')) {
       setKanban(kanban.filter(t => t.id !== id));
     }
@@ -63,11 +60,9 @@ export default function KanbanTab({ kanban, setKanban }) {
         <input type="text" placeholder="Add new task" value={newTaskTitle} onChange={(e) => setNewTaskTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addTask()} style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '0.9rem' }} />
         <select value={newTaskTag} onChange={(e) => setNewTaskTag(e.target.value)} style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}>
-          <option value="coding">Coding</option>
-          <option value="depth">Depth</option>
-          <option value="project">Project</option>
-          <option value="interview">Interview</option>
-          <option value="mindset">Mindset</option>
+          {KANBAN_TAGS.map(tag => (
+            <option key={tag.name} value={tag.name}>{tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}</option>
+          ))}
         </select>
         <button onClick={addTask} style={{ padding: '8px 16px', background: '#534AB7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Add</button>
       </div>
