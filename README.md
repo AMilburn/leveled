@@ -76,4 +76,4 @@ export const WEEK_TEMPLATES = {
    - `VITE_ALLOWED_USER_EMAIL`
 5. Deploy on push to main
 
-See `db/README.md` for database schema and migration details.
+See `supabase/README.md` for database schema and migration details.
