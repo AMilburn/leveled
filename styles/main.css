@@ -536,3 +536,173 @@ body {
   color: var(--color-text-secondary);
   margin-bottom: 12px;
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .app {
+    padding: 0.75rem;
+  }
+
+  /* Nav bar adjustments */
+  h1 {
+    font-size: 16px !important;
+  }
+
+  .tab {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Kanban: 2 columns on tablet */
+  .kanban {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  /* Progress labels for smaller screens */
+  .prog-label {
+    min-width: 140px;
+    font-size: 11px;
+  }
+
+  .hours-label {
+    min-width: 70px;
+    font-size: 11px;
+  }
+
+  /* Schedule grid adjustments */
+  .week-grid {
+    grid-template-columns: 60px repeat(7, minmax(0, 1fr));
+    gap: 1px;
+    min-width: 100%;
+  }
+
+  .time-label {
+    font-size: 9px;
+  }
+
+  .slot {
+    height: 28px;
+    font-size: 8px;
+    padding: 1px 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 0.5rem;
+  }
+
+  /* Nav bar for mobile */
+  h1 {
+    font-size: 14px !important;
+  }
+
+  .tab {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  /* Hide logout button text on very small screens, show icon instead */
+  button:last-of-type {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  /* Kanban: 1 column on mobile */
+  .kanban {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .col-head {
+    font-size: 10px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+
+  .kcard {
+    padding: 7px 9px;
+    margin-bottom: 5px;
+  }
+
+  .kcard-title {
+    font-size: 11px;
+  }
+
+  .ktag {
+    font-size: 9px;
+    padding: 1px 6px;
+  }
+
+  .knote {
+    font-size: 10px;
+  }
+
+  /* Progress section adjustments */
+  .prog-label {
+    min-width: 100px;
+    font-size: 10px;
+  }
+
+  .prog-bar-bg {
+    height: 6px;
+  }
+
+  .hours-label {
+    min-width: 60px;
+    font-size: 10px;
+  }
+
+  .hours-bar {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .hours-num {
+    font-size: 11px;
+    min-width: 50px;
+  }
+
+  /* Schedule grid for mobile */
+  .week-grid {
+    grid-template-columns: 50px repeat(7, minmax(0, 1fr));
+    gap: 0.5px;
+    min-width: 100%;
+  }
+
+  .day-header {
+    font-size: 10px;
+    padding: 4px 1px;
+  }
+
+  .time-label {
+    font-size: 8px;
+    height: 28px;
+  }
+
+  .slot {
+    height: 26px;
+    font-size: 7px;
+    padding: 1px;
+  }
+
+  /* Section titles */
+  .sec-title {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  /* Text areas */
+  .note-area {
+    min-height: 60px;
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  /* Mode buttons */
+  .mode-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+}
