@@ -4,3 +4,4 @@ export * from "./types";
 export * from "./schedule";
 export * from "./kanban";
 export * from "./goals";
+export * from "./stats";

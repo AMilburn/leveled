@@ -26,8 +26,13 @@ function getCurrentWeek(): number {
 }
 
 export default function MainApp({ session: _session }: { session: Session }) {
-  const [activeTab, setActiveTab] = useState("schedule");
-  const [currentWeek, setCurrentWeek] = useState(getCurrentWeek());
+  const [activeTab, setActiveTab] = useState(
+    () => localStorage.getItem("jsd2_activeTab") || "schedule",
+  );
+  const [currentWeek, setCurrentWeek] = useState(() => {
+    const saved = localStorage.getItem("jsd2_currentWeek");
+    return saved ? parseInt(saved) : getCurrentWeek();
+  });
   const [pWeek, setPWeek] = useState(getCurrentWeek());
   const [weekData, setWeekData] = useState<WeekData>({});
   const [kanban, setKanban] = useState(KANBAN_TASKS);
@@ -40,6 +45,16 @@ export default function MainApp({ session: _session }: { session: Session }) {
     window.addEventListener("online", handleOnline);
     return () => window.removeEventListener("online", handleOnline);
   }, []);
+
+  // Save active tab to localStorage
+  useEffect(() => {
+    localStorage.setItem("jsd2_activeTab", activeTab);
+  }, [activeTab]);
+
+  // Save current week to localStorage
+  useEffect(() => {
+    localStorage.setItem("jsd2_currentWeek", currentWeek.toString());
+  }, [currentWeek]);
 
   // Auto-save when data changes
   useEffect(() => {
@@ -106,14 +121,15 @@ export default function MainApp({ session: _session }: { session: Session }) {
       setWeekData((prev) => ({
         ...prev,
         [`w${weekNum}`]: {
-          slots: JSON.parse(JSON.stringify(WEEK_TEMPLATES.normal)),
+          slots: JSON.parse(JSON.stringify(WEEK_TEMPLATES.normal.template)),
           mode: "normal",
           counts: {},
           reflection: "",
+          activityLogs: [],
         },
       }));
     }
-    return weekData[`w${weekNum}`] || { mode: "normal", slots: {}, counts: {}, reflection: "" };
+    return weekData[`w${weekNum}`] || { mode: "normal", slots: {}, counts: {}, reflection: "", activityLogs: [] };
   }
 
   async function handleLogout(): Promise<void> {
@@ -170,6 +186,35 @@ export default function MainApp({ session: _session }: { session: Session }) {
         >
           Log out
         </button>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "2rem",
+          paddingBottom: "1rem",
+          borderBottom: "2px solid var(--color-border)",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "28px",
+          }}
+        >
+          📈
+        </div>
+        <h1
+          style={{
+            fontSize: "24px",
+            fontWeight: "700",
+            margin: "0",
+            color: "var(--color-text)",
+          }}
+        >
+          Leveled
+        </h1>
       </div>
 
       {activeTab === "schedule" && (
