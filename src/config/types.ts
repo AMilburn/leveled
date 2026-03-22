@@ -64,7 +64,8 @@ export interface GoalDefinition {
 export interface ActivityLog {
   activity: BaseActivity;
   amount: number;
-  xpEarned: number;
+  label: string; // Activity label (e.g., "LeetCode Medium", "System Design Sketch")
+  points: number; // Total points earned (pointValue × amount, or custom for hours)
   timestamp: string;
 }
 

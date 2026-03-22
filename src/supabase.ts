@@ -42,6 +42,7 @@ export async function syncAllData(weekData: WeekData, kanban: KanbanTask[], wins
         schedule: data.slots,
         counts: data.counts,
         reflection: data.reflection,
+        activity_logs: data.activityLogs || [],
         user_id: userId,
       };
     });
@@ -120,6 +121,7 @@ export async function loadFromSupabase(): Promise<{ weekData: WeekData; kanban: 
           mode: week.week_type,
           counts: week.counts || {},
           reflection: week.reflection || "",
+          activityLogs: week.activity_logs || [],
         };
       });
     }
@@ -136,3 +138,4 @@ export async function loadFromSupabase(): Promise<{ weekData: WeekData; kanban: 
     return null;
   }
 }
+
