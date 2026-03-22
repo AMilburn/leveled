@@ -67,7 +67,8 @@ export default function KanbanTab({ kanban, setKanban }: { kanban: KanbanTask[];
         <button onClick={addTask} style={{ padding: '8px 16px', background: '#534AB7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Add</button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+      <div style={{ overflowX: 'auto', overflowY: 'visible' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(280px, 1fr))', gap: '12px', minWidth: 'min-content' }}>
         {KCOLS.map((col, ci) => {
           const colTasks = kanban.filter(c => c.col === ci);
           return (
@@ -111,6 +112,7 @@ export default function KanbanTab({ kanban, setKanban }: { kanban: KanbanTask[];
           </div>
         );
         })}
+        </div>
       </div>
     </div>
   );

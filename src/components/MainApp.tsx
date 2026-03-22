@@ -2,7 +2,14 @@ import { useState, useEffect } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import { syncAllData, loadFromSupabase } from "../supabase";
-import { WEEK_TEMPLATES, KANBAN_TASKS, DEFAULT_WINS, WeekData, Win, Week } from "../config";
+import {
+  WEEK_TEMPLATES,
+  KANBAN_TASKS,
+  DEFAULT_WINS,
+  WeekData,
+  Win,
+  Week,
+} from "../config";
 import ScheduleTab from "./tabs/ScheduleTab";
 import KanbanTab from "./tabs/KanbanTab";
 import ProgressTab from "./tabs/ProgressTab";
@@ -129,7 +136,15 @@ export default function MainApp({ session: _session }: { session: Session }) {
         },
       }));
     }
-    return weekData[`w${weekNum}`] || { mode: "normal", slots: {}, counts: {}, reflection: "", activityLogs: [] };
+    return (
+      weekData[`w${weekNum}`] || {
+        mode: "normal",
+        slots: {},
+        counts: {},
+        reflection: "",
+        activityLogs: [],
+      }
+    );
   }
 
   async function handleLogout(): Promise<void> {
@@ -145,7 +160,7 @@ export default function MainApp({ session: _session }: { session: Session }) {
   const tabButtons = [
     { id: "schedule", label: "Schedule" },
     { id: "kanban", label: "Kanban" },
-    { id: "progress", label: "Progress" },
+    { id: "progress", label: "Stats" },
     { id: "wins", label: "Wins" },
   ];
 
@@ -154,14 +169,41 @@ export default function MainApp({ session: _session }: { session: Session }) {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
+          justifyContent: "space-between",
           paddingBottom: "1rem",
           borderBottom: "1px solid var(--color-border)",
           marginBottom: "1.5rem",
+          gap: "2rem",
         }}
       >
-        <div className="tabs">
+        {/* Left: App Title */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            minWidth: "fit-content",
+          }}
+        >
+          <div style={{ fontSize: "24px" }} className="nav-emoji">
+            📈
+          </div>
+          <h1
+            style={{
+              fontSize: "18px",
+              fontWeight: "700",
+              margin: "0",
+              color: "var(--color-text)",
+            }}
+            className="nav-title"
+          >
+            Leveled
+          </h1>
+        </div>
+
+        {/* Center: Tabs */}
+        <div className="tabs" style={{ flex: 1, justifyContent: "center" }}>
           {tabButtons.map((tab) => (
             <button
               key={tab.id}
@@ -172,6 +214,8 @@ export default function MainApp({ session: _session }: { session: Session }) {
             </button>
           ))}
         </div>
+
+        {/* Right: Logout */}
         <button
           onClick={handleLogout}
           style={{
@@ -182,39 +226,11 @@ export default function MainApp({ session: _session }: { session: Session }) {
             cursor: "pointer",
             color: "var(--color-text-secondary)",
             fontWeight: "500",
+            minWidth: "fit-content",
           }}
         >
           Log out
         </button>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          marginBottom: "2rem",
-          paddingBottom: "1rem",
-          borderBottom: "2px solid var(--color-border)",
-        }}
-      >
-        <div
-          style={{
-            fontSize: "28px",
-          }}
-        >
-          📈
-        </div>
-        <h1
-          style={{
-            fontSize: "24px",
-            fontWeight: "700",
-            margin: "0",
-            color: "var(--color-text)",
-          }}
-        >
-          Leveled
-        </h1>
       </div>
 
       {activeTab === "schedule" && (
@@ -233,7 +249,6 @@ export default function MainApp({ session: _session }: { session: Session }) {
           weekData={weekData}
           setWeekData={setWeekData}
           pWeek={pWeek}
-          setPWeek={setPWeek}
           getOrCreateWeek={getOrCreateWeek}
         />
       )}

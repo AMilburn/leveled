@@ -112,26 +112,26 @@ export default function ScheduleTab({
   return (
     <div className="panel active">
       <div className="week-nav" style={{ justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          <button
-            onClick={() => setCurrentWeek(currentWeek - 1)}
-            style={{ fontSize: "12px", padding: "4px 12px" }}
-          >
-            ← prev
-          </button>
-          <span
-            className="week-label"
-            style={{ fontSize: "14px", fontWeight: "500", minWidth: "140px" }}
-          >
-            {weekLabel(currentWeek)}
-          </span>
-          <button
-            onClick={() => setCurrentWeek(currentWeek + 1)}
-            style={{ fontSize: "12px", padding: "4px 12px" }}
-          >
-            next →
-          </button>
-        </div>
+        <button
+          onClick={() => setCurrentWeek(currentWeek - 1)}
+          style={{ fontSize: "12px", padding: "4px 12px" }}
+          className="week-prev"
+        >
+          ← prev
+        </button>
+        <span
+          className="week-label"
+          style={{ fontSize: "14px", fontWeight: "500", minWidth: "140px", textAlign: "center" }}
+        >
+          {weekLabel(currentWeek)}
+        </span>
+        <button
+          onClick={() => setCurrentWeek(currentWeek + 1)}
+          style={{ fontSize: "12px", padding: "4px 12px" }}
+          className="week-next"
+        >
+          next →
+        </button>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <span
             className="mode-badge"

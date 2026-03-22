@@ -537,6 +537,14 @@ body {
   margin-bottom: 12px;
 }
 
+.nav-emoji {
+  display: inline;
+}
+
+.nav-title {
+  font-size: 18px;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .app {
@@ -544,19 +552,13 @@ body {
   }
 
   /* Nav bar adjustments */
-  h1 {
-    font-size: 16px !important;
+  .nav-title {
+    font-size: 14px;
   }
 
   .tab {
-    padding: 6px 12px;
+    padding: 6px 10px;
     font-size: 12px;
-  }
-
-  /* Kanban: 2 columns on tablet */
-  .kanban {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
   }
 
   /* Progress labels for smaller screens */
@@ -569,23 +571,6 @@ body {
     min-width: 70px;
     font-size: 11px;
   }
-
-  /* Schedule grid adjustments */
-  .week-grid {
-    grid-template-columns: 60px repeat(7, minmax(0, 1fr));
-    gap: 1px;
-    min-width: 100%;
-  }
-
-  .time-label {
-    font-size: 9px;
-  }
-
-  .slot {
-    height: 28px;
-    font-size: 8px;
-    padding: 1px 2px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -593,50 +578,29 @@ body {
     padding: 0.5rem;
   }
 
-  /* Nav bar for mobile */
-  h1 {
-    font-size: 14px !important;
+  /* Nav bar for mobile - hide emoji and make smaller */
+  .nav-emoji {
+    display: none;
+  }
+
+  .nav-title {
+    font-size: 12px;
+  }
+
+  /* Reduce tab padding and gap */
+  .tabs {
+    gap: 0 !important;
   }
 
   .tab {
-    padding: 6px 8px;
-    font-size: 11px;
+    padding: 4px 6px !important;
+    font-size: 10px !important;
   }
 
-  /* Hide logout button text on very small screens, show icon instead */
+  /* Compact logout button */
   button:last-of-type {
-    padding: 6px 8px;
-    font-size: 11px;
-  }
-
-  /* Kanban: 1 column on mobile */
-  .kanban {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
-  .col-head {
-    font-size: 10px;
-    padding: 4px 8px;
-    margin-bottom: 4px;
-  }
-
-  .kcard {
-    padding: 7px 9px;
-    margin-bottom: 5px;
-  }
-
-  .kcard-title {
-    font-size: 11px;
-  }
-
-  .ktag {
-    font-size: 9px;
-    padding: 1px 6px;
-  }
-
-  .knote {
-    font-size: 10px;
+    padding: 4px 8px !important;
+    font-size: 10px !important;
   }
 
   /* Progress section adjustments */
@@ -664,29 +628,6 @@ body {
     min-width: 50px;
   }
 
-  /* Schedule grid for mobile */
-  .week-grid {
-    grid-template-columns: 50px repeat(7, minmax(0, 1fr));
-    gap: 0.5px;
-    min-width: 100%;
-  }
-
-  .day-header {
-    font-size: 10px;
-    padding: 4px 1px;
-  }
-
-  .time-label {
-    font-size: 8px;
-    height: 28px;
-  }
-
-  .slot {
-    height: 26px;
-    font-size: 7px;
-    padding: 1px;
-  }
-
   /* Section titles */
   .sec-title {
     font-size: 13px;
@@ -704,5 +645,31 @@ body {
   .mode-btn {
     padding: 4px 10px;
     font-size: 11px;
+  }
+
+  /* Week nav for mobile - prev/next on opposite sides, dates on left */
+  .week-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .week-prev,
+  .week-next {
+    width: 50px;
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+    flex-shrink: 0;
+  }
+
+  .week-label {
+    flex: 1;
+    text-align: left;
+    font-size: 11px !important;
+    min-width: 0;
+  }
+
+  .week-nav > div {
+    display: none;
   }
 }
