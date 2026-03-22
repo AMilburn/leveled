@@ -53,17 +53,50 @@ Open http://localhost:5174. Data auto-saves to localStorage.
 
 ## Customizing Your Schedule
 
-Edit `src/config.ts` to customize weekly templates:
+Your weekly schedule is defined declaratively in `src/config/goals.ts` using **ACTIVITY_DISTRIBUTION**. This declares which activities you do, which days, and for how long. The app then automatically expands this into an hourly grid.
 
-```typescript
-export const WEEK_TEMPLATES = {
-  normal: {
-    Mon: ['workout', 'coding', 'depth', ...],
-  },
-}
-```
+### How It Works
 
-**Activity types:** `coding`, `depth`, `project`, `stories`, `workout`, `applications`, `system-design`, `networking`, `retrieval`, `review`, `blocked`, `free`, plus `stretch-*` variants.
+1. **Edit `ACTIVITY_DISTRIBUTION`** in `src/config/goals.ts`:
+   ```typescript
+   export const ACTIVITY_DISTRIBUTION = {
+     normal: [
+       { activity: "coding", days: ["Mon", "Tue", "Wed", "Fri"], hours: 3 },
+       { activity: "system", days: ["Mon", "Fri"], hours: 2 },
+       { activity: "workout", days: ["Mon", "Tue", "Fri"], hours: 1 },
+       // Add more activities...
+     ],
+     travel: [ /* reduced week */ ],
+     hard: [ /* high-intensity week */ ],
+   };
+   ```
+
+2. **How schedules are built:**
+   - You define activities + days + hours in `ACTIVITY_DISTRIBUTION`
+   - `WEEK_TEMPLATES` (in `schedule.ts`) calls `generateWeekTemplate()` to expand those into 15-hour daily grids
+   - Time-of-day preferences (morning, afternoon, evening) are applied automatically
+
+3. **Customize time-of-day preferences** in `src/config/schedule.ts`:
+   ```typescript
+   const preferences: Record<string, number> = {
+     workout: TIME_SLOTS.morning,      // 8am
+     coding: TIME_SLOTS.morning,       // 8am
+     system: TIME_SLOTS.afternoon,     // 1pm
+     retrieval: TIME_SLOTS.evening,    // 8pm
+   };
+   ```
+
+### Available Activities
+
+`coding`, `depth`, `project`, `stories`, `workout`, `applications`, `system`, `networking`, `retrieval`, `review`, `blocked`, `free`. Stretch variants: `stretch-coding`, `stretch-depth`, etc.
+
+### Tips for Customization
+
+- Start with your real-world constraints (meetings, family time, off days)
+- Group similar activities on the same day to minimize context switching
+- Remember: activities respect time-of-day preferences (e.g., all workouts go in morning slots)
+- Each day can hold max 15 hours — the app fills slots sequentially per activity
+- Test each week type for 2–3 weeks before tweaking
 
 ## Deployment
 

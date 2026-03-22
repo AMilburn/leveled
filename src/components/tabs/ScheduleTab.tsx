@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   WEEK_TEMPLATES,
-  MODE_NOTES,
   PROGRESS_SETTINGS,
   WEEKLY_HOUR_GOALS,
   SCHEDULE_CONFIG,
@@ -15,7 +14,6 @@ import {
 
 const DAYS = SCHEDULE_CONFIG.days;
 const TIMES = SCHEDULE_CONFIG.times;
-
 
 function weekLabel(n: number): string {
   const now = new Date(2026, 2, 15);
@@ -42,14 +40,23 @@ export default function ScheduleTab({
   setCurrentWeek: (week: number) => void;
   getOrCreateWeek: (week: number) => Week;
 }) {
-  const [pickerSlot, setPickerSlot] = useState<{ day: string; time: number } | null>(null);
+  const [pickerSlot, setPickerSlot] = useState<{
+    day: string;
+    time: number;
+  } | null>(null);
   const wd = getOrCreateWeek(currentWeek);
 
   const updateSlot = (day: string, timeIdx: number, type: ActivityType) => {
     setWeekData((prev) => {
       const updated = { ...prev };
       const key = `w${currentWeek}`;
-      updated[key] = { ...wd };
+      updated[key] = {
+        ...wd,
+        slots: {
+          ...wd.slots,
+          [day]: [...wd.slots[day]],
+        },
+      };
       updated[key].slots[day][timeIdx] = type;
       return updated;
     });
@@ -66,7 +73,10 @@ export default function ScheduleTab({
         ...prev[`w${currentWeek}`],
         mode,
         slots: JSON.parse(
-          JSON.stringify(WEEK_TEMPLATES[mode as keyof typeof WEEK_TEMPLATES] || WEEK_TEMPLATES.normal),
+          JSON.stringify(
+            (WEEK_TEMPLATES[mode as keyof typeof WEEK_TEMPLATES]?.template ||
+              WEEK_TEMPLATES.normal.template),
+          ),
         ),
       },
     }));
@@ -77,7 +87,7 @@ export default function ScheduleTab({
       ...prev,
       [`w${currentWeek}`]: {
         ...prev[`w${currentWeek}`],
-        slots: JSON.parse(JSON.stringify(WEEK_TEMPLATES[wd.mode])),
+        slots: JSON.parse(JSON.stringify(WEEK_TEMPLATES[wd.mode].template)),
       },
     }));
   };
@@ -96,8 +106,8 @@ export default function ScheduleTab({
   };
 
   const { core, stretch } = calculateHours();
-  const maxH =
-    WEEKLY_HOUR_GOALS[wd.mode]?.totalHours || PROGRESS_SETTINGS[wd.mode]?.coreHoursMax || 21;
+  const coreMax = PROGRESS_SETTINGS[wd.mode]?.coreHoursMax || 21;
+  const withStretchMax = coreMax + (PROGRESS_SETTINGS[wd.mode]?.stretchMax || 0);
 
   return (
     <div className="panel active">
@@ -178,8 +188,6 @@ export default function ScheduleTab({
           <option value="hard">Hard week</option>
         </select>
       </div>
-
-      <p className="tip">Click any slot to change it. Dotted = stretch goal.</p>
 
       <div className="grid-wrap">
         <div
@@ -264,7 +272,9 @@ export default function ScheduleTab({
                       : type.startsWith("stretch-")
                         ? `1.5px dashed ${getStretchColor(type)}`
                         : "none",
-                    color: type.startsWith("stretch-") ? getDarkenedStretchColor(type) : "#222",
+                    color: type.startsWith("stretch-")
+                      ? getDarkenedStretchColor(type)
+                      : "#222",
                   }}
                 >
                   {SCHEDULE_CONFIG.typeLabels[type]}
@@ -299,6 +309,16 @@ export default function ScheduleTab({
             }}
           >
             {pickerSlot.day} {TIMES[pickerSlot.time]}
+          </div>
+          <div
+            style={{
+              fontSize: "11px",
+              color: "#666",
+              marginBottom: "0.75rem",
+              lineHeight: "1.3",
+            }}
+          >
+            Solid = core. Dotted = stretch goal.
           </div>
           <div
             style={{
@@ -390,7 +410,7 @@ export default function ScheduleTab({
             style={{
               height: "100%",
               background: "#534AB7",
-              width: Math.min(100, (core / maxH) * 100) + "%",
+              width: Math.min(100, (core / coreMax) * 100) + "%",
             }}
           ></div>
         </div>
@@ -413,7 +433,7 @@ export default function ScheduleTab({
             style={{
               height: "100%",
               background: "#0F6E56",
-              width: Math.min(100, ((core + stretch) / maxH) * 100) + "%",
+              width: Math.min(100, ((core + stretch) / withStretchMax) * 100) + "%",
             }}
           ></div>
         </div>
@@ -498,7 +518,7 @@ export default function ScheduleTab({
           color: "#666",
         }}
       >
-        {MODE_NOTES[wd.mode]}
+        {WEEK_TEMPLATES[wd.mode]?.note}
       </div>
 
       <div

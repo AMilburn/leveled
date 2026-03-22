@@ -1,378 +1,212 @@
 // Schedule configuration, templates, and activity types
+import {
+  Day,
+  ActivityType,
+  WeekMode,
+  WeekTemplates,
+  ActivityPlacement,
+} from "./types";
 
-export const WEEK_TEMPLATES = {
+export const DAYS: Day[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const TIME_SLOTS = {
+  morning: 0, // 8am
+  latemorning: 2, // 10am
+  midday: 4, // 12pm
+  afternoon: 5, // 1pm
+  lateafternoon: 7, // 3pm
+  evening: 12, // 8pm
+};
+
+function generateWeekTemplate(
+  placements: readonly ActivityPlacement[],
+  stretchPlacements?: readonly ActivityPlacement[],
+): Record<Day, readonly ActivityType[]> {
+  const weekTemplate: Record<Day, ActivityType[]> = {} as Record<
+    Day,
+    ActivityType[]
+  >;
+
+  // Initialize with free time
+  DAYS.forEach((day) => {
+    weekTemplate[day] = Array(15).fill("free");
+  });
+
+  // Activity scheduling preferences (which time of day for each activity)
+  const preferences: Record<string, number> = {
+    workout: TIME_SLOTS.morning,
+    coding: TIME_SLOTS.morning,
+    system: TIME_SLOTS.afternoon,
+    depth: TIME_SLOTS.afternoon,
+    applications: TIME_SLOTS.afternoon,
+    stories: TIME_SLOTS.afternoon,
+    project: TIME_SLOTS.evening,
+    retrieval: TIME_SLOTS.evening,
+  };
+
+  // Place core activities
+  placements.forEach(({ activity, days: activityDays, hours }) => {
+    const startSlot = preferences[activity] || TIME_SLOTS.morning;
+
+    activityDays.forEach((day) => {
+      let placed = 0;
+      let slot = startSlot;
+
+      while (placed < hours && slot < 15) {
+        if (weekTemplate[day][slot] === "free") {
+          weekTemplate[day][slot] = activity;
+          placed++;
+        }
+        slot++;
+      }
+    });
+  });
+
+  // Place stretch activities (with "stretch-" prefix)
+  if (stretchPlacements) {
+    stretchPlacements.forEach(({ activity, days: activityDays, hours }) => {
+      const startSlot = preferences[activity] || TIME_SLOTS.morning;
+
+      activityDays.forEach((day) => {
+        let placed = 0;
+        let slot = startSlot;
+        const stretchActivity = `stretch-${activity}` as ActivityType;
+
+        while (placed < hours && slot < 15) {
+          if (weekTemplate[day][slot] === "free") {
+            weekTemplate[day][slot] = stretchActivity;
+            placed++;
+          }
+          slot++;
+        }
+      });
+    });
+  }
+
+  return weekTemplate as Record<Day, readonly ActivityType[]>;
+}
+
+export const WEEK_TEMPLATES: WeekTemplates = {
   normal: {
-    Mon: [
-      "workout", // 8am
-      "coding", // 9am
-      "coding", // 10am
-      "depth", // 11am
-      "free", // 12pm
-      "system", // 1pm
-      "project", // 2pm
-      "project", // 3pm
-      "applications", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "stretch-coding", // 9pm
-      "free", // 10pm
-    ],
-    Tue: [
-      "workout", // 8am
-      "system", // 9am
-      "system", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "stories", // 1pm
-      "coding", // 2pm
-      "depth", // 3pm
-      "applications", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "stretch-project", // 8pm
-      "stretch-system", // 9pm
-      "free", // 10pm
-    ],
-    Wed: [
-      "workout", // 8am
-      "project", // 9am
-      "project", // 10am
-      "coding", // 11am
-      "free", // 12pm
-      "networking", // 1pm
-      "depth", // 2pm
-      "stories", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Thu: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "system", // 8pm
-      "project", // 9pm
-      "free", // 10pm
-    ],
-    Fri: [
-      "workout", // 8am
-      "retrieval", // 9am
-      "coding", // 10am
-      "depth", // 11am
-      "stories", // 12pm
-      "applications", // 1pm
-      "project", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Sat: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "coding", // 2pm
-      "stretch-coding", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Sun: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "free", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
+    template: generateWeekTemplate(
+      [
+        { activity: "coding", days: ["Mon", "Tue", "Wed", "Fri"], hours: 3 },
+        { activity: "system", days: ["Mon", "Fri"], hours: 2 },
+        { activity: "depth", days: ["Mon", "Wed", "Fri"], hours: 1 },
+        { activity: "project", days: ["Thu"], hours: 2 },
+        { activity: "applications", days: ["Wed", "Thu"], hours: 1 },
+        { activity: "stories", days: ["Wed"], hours: 1 },
+        { activity: "workout", days: ["Mon", "Tue", "Sat"], hours: 1 },
+        { activity: "retrieval", days: ["Mon", "Thu"], hours: 1 },
+      ] as ActivityPlacement[],
+      [
+        { activity: "project", days: ["Tue", "Sat"], hours: 1 },
+        { activity: "depth", days: ["Sun"], hours: 1 },
+        { activity: "workout", days: ["Fri"], hours: 1 },
+      ] as ActivityPlacement[],
+    ),
+    note: "The Normal Week: High-Intensity Consolidation. Focus: Forging new neural pathways through Deep Work and Active Synthesis.",
   },
   travel: {
-    Mon: [
-      "workout", // 8am
-      "coding", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "free", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Tue: [
-      "free", // 8am
-      "free", // 9am
-      "coding", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Wed: [
-      "workout", // 8am
-      "depth", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "project", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "free", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Thu: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "free", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Fri: [
-      "workout", // 8am
-      "coding", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Sat: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "free", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Sun: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "free", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
+    template: generateWeekTemplate(
+      [
+        { activity: "coding", days: ["Mon", "Wed"], hours: 2 },
+        { activity: "system", days: ["Tue"], hours: 1 },
+        { activity: "depth", days: ["Thu"], hours: 2 },
+        { activity: "project", days: ["Tue"], hours: 1 },
+        { activity: "applications", days: ["Tue", "Wed"], hours: 1 },
+        { activity: "workout", days: ["Mon", "Wed", "Sat"], hours: 1 },
+        {
+          activity: "retrieval",
+          days: ["Mon", "Tue", "Wed", "Thu"],
+          hours: 1,
+        },
+      ] as ActivityPlacement[],
+      [{ activity: "coding", days: ["Sat"], hours: 1 }] as ActivityPlacement[],
+    ),
+    note: "The Travel Week: Pattern Maintenance. Focus: Combating the Forgetting Curve through high-frequency, low-friction Retrieval.",
   },
   hard: {
-    Mon: [
-      "workout", // 8am
-      "coding", // 9am
-      "coding", // 10am
-      "depth", // 11am
-      "free", // 12pm
-      "system", // 1pm
-      "project", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Tue: [
-      "workout", // 8am
-      "system", // 9am
-      "coding", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "stories", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "review", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Wed: [
-      "workout", // 8am
-      "project", // 9am
-      "project", // 10am
-      "depth", // 11am
-      "free", // 12pm
-      "coding", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Thu: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "system", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Fri: [
-      "workout", // 8am
-      "retrieval", // 9am
-      "coding", // 10am
-      "stories", // 11am
-      "free", // 12pm
-      "project", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "retrieval", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Sat: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "free", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
-    Sun: [
-      "free", // 8am
-      "free", // 9am
-      "free", // 10am
-      "free", // 11am
-      "free", // 12pm
-      "free", // 1pm
-      "free", // 2pm
-      "free", // 3pm
-      "free", // 4pm
-      "free", // 5pm
-      "free", // 6pm
-      "free", // 7pm
-      "free", // 8pm
-      "free", // 9pm
-      "free", // 10pm
-    ],
+    template: generateWeekTemplate(
+      [
+        { activity: "coding", days: ["Mon", "Tue", "Wed", "Fri"], hours: 1 },
+        { activity: "system", days: ["Mon"], hours: 1 },
+        { activity: "project", days: ["Tue"], hours: 1 },
+        { activity: "applications", days: ["Fri"], hours: 1 },
+        { activity: "workout", days: ["Mon", "Tue", "Fri", "Sat"], hours: 1 },
+        {
+          activity: "retrieval",
+          days: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+          hours: 1,
+        },
+      ] as ActivityPlacement[],
+      [],
+    ),
+    note: "The Hard Week: Cognitive Recovery & Defense. Focus: Protecting your Knowledge Baseline and lowering Cortisol levels.",
   },
 };
 
-export const MODE_NOTES = {
-  normal:
-    "Normal week: core blocks committed, stretch blocks (dotted) are optional upgrades.",
-  travel:
-    "Travel week: stripped to essentials only. No stretch blocks. Focus on coding and one depth topic.",
-  hard: "Hard week: all stretch blocks removed. Core commitments only. Protect workout and one coding session — momentum matters.",
-};
+// Calculate core hour breakdown from WEEK_TEMPLATES (excluding stretch)
+export function calculateHourBreakdownFromTemplates(): Record<
+  WeekMode,
+  Record<string, number>
+> {
+  const breakdown: Record<WeekMode, Record<string, number>> = {
+    normal: {},
+    travel: {},
+    hard: {},
+  };
+
+  (Object.keys(WEEK_TEMPLATES) as WeekMode[]).forEach((mode) => {
+    const template = WEEK_TEMPLATES[mode].template;
+    const activities: Record<string, number> = {};
+
+    // Count occurrences of each CORE activity across all days (exclude stretch variants)
+    DAYS.forEach((day) => {
+      template[day].forEach((activity) => {
+        // Only count non-stretch, non-special activities
+        if (
+          activity !== "free" &&
+          activity !== "blocked" &&
+          !activity.startsWith("stretch-")
+        ) {
+          activities[activity] = (activities[activity] || 0) + 1;
+        }
+      });
+    });
+
+    breakdown[mode] = activities;
+  });
+
+  return breakdown;
+}
+
+// Calculate stretch hour totals from WEEK_TEMPLATES
+export function calculateStretchHoursFromTemplates(): Record<WeekMode, number> {
+  const stretchHours: Record<WeekMode, number> = {
+    normal: 0,
+    travel: 0,
+    hard: 0,
+  };
+
+  (Object.keys(WEEK_TEMPLATES) as WeekMode[]).forEach((mode) => {
+    const template = WEEK_TEMPLATES[mode].template;
+    let total = 0;
+
+    // Count occurrences of each STRETCH activity
+    DAYS.forEach((day) => {
+      template[day].forEach((activity) => {
+        if (activity.startsWith("stretch-")) {
+          total++;
+        }
+      });
+    });
+
+    stretchHours[mode] = total;
+  });
+
+  return stretchHours;
+}
 
 // Single source of truth for all activity metadata (label + color)
 const ACTIVITY_METADATA = {
@@ -395,6 +229,7 @@ const ACTIVITY_METADATA = {
   "stretch-applications": { label: "+ Applications", color: "#e8eff8" },
   "stretch-networking": { label: "+ Networking", color: "#e8eff8" },
   "stretch-retrieval": { label: "+ Retrieval", color: "#f0e8d8" },
+  "stretch-review": { label: "+ Review", color: "#f5f5f0" },
   free: { label: "", color: "#f5f5f5" },
   blocked: { label: "–", color: "#e8e8e8" },
 } as const;
@@ -411,7 +246,7 @@ export const ALL_ACTIVITIES = Object.keys(
 
 // Schedule configuration
 export const SCHEDULE_CONFIG = {
-  days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  days: DAYS,
   times: [
     "8am",
     "9am",
