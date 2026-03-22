@@ -1,14 +1,34 @@
 # Leveled
 
-A personal tracker for developers who are building toward something. Weekly scheduling, goal tracking, and visualised progress. For developers who work better with a plan. Small wins compound. Start tracking them.
+A gamified personal tracker for developers building toward something. Weekly scheduling, skill leveling through activity logging, and win tracking. For developers who work better with a plan and like RPG-style progression. Small wins compound. Start tracking them.
 
 ## Features
 
 - **Weekly schedule** with core and stretch targets across every area of your practice
 - **Kanban board** to move tasks from backlog to done
-- **Progress tracker** with weekly and cumulative counts, plus space to reflect
+- **Gamified stats** (Engineer Tier system) - track INT/WIS/DEX/CHA skills with XP and levels
+- **Activity logging** - log wins and progress, earn points toward stat levels
 - **Wins journal** to capture every small victory
 - **Customisable templates** for your own goals and routine
+
+## Engineer Tier System
+
+The **Stats** tab tracks your growth across four core engineering competencies, gamified as an RPG-style progression system:
+
+- **INT** (Intelligence) - Coding & Pattern Recognition (LeetCode, technical problems)
+- **WIS** (Wisdom) - System Design & Tech Depth (design sessions, research, deep dives)
+- **DEX** (Dexterity) - Implementation & Tooling (PRs, features, DevOps, refactoring)
+- **CHA** (Charisma) - Stories & Communication (job applications, STAR stories, networking)
+
+Each activity you log earns fixed points. Accumulate XP to level up each stat independently. Your overall **Engineer Tier** (Junior → Mid → Senior → Staff) is based on cumulative progress across all stats.
+
+## Screenshots
+
+### Weekly Schedule
+![Schedule view with core and stretch hours](src/assets/leveled-schedule.png)
+
+### Gamified Stats Dashboard
+![Stats tab showing engineer tier and skill progression](src/assets/leveled-stats.png)
 
 ## Stack
 
