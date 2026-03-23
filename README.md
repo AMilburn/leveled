@@ -1,132 +1,130 @@
-# Leveled
+# 📈 Leveled
 
-A gamified personal tracker for developers building toward something. Weekly scheduling, skill leveling through activity logging, and win tracking. For developers who work better with a plan and like RPG-style progression. Small wins compound. Start tracking them.
+> **Plan. Track. Level Up.**
 
-## Features
+Leveled is a personal weekly planner and progress tracker designed specifically for developers. It transforms your professional growth into a gamified progression system. Stop guessing your progress, start leveling your career.
 
-- **Weekly schedule** with core and stretch targets across every area of your practice
-- **Kanban board** to move tasks from backlog to done
-- **Gamified stats** (Engineer Tier system) - track INT/WIS/DEX/CHA skills with XP and levels
-- **Activity logging** - log wins and progress, earn points toward stat levels
-- **Wins journal** to capture every small victory
-- **Customisable templates** for your own goals and routine
+<div align="center">
+  <img src="/src/assets/leveled-schedule.png" width="75%" />
+</div>
 
-## Engineer Tier System
+---
 
-The **Stats** tab tracks your growth across four core engineering competencies, gamified as an RPG-style progression system:
+## 🚀 Key Features
 
-- **INT** (Intelligence) - Coding & Pattern Recognition (LeetCode, technical problems)
-- **WIS** (Wisdom) - System Design & Tech Depth (design sessions, research, deep dives)
-- **DEX** (Dexterity) - Implementation & Tooling (PRs, features, DevOps, refactoring)
-- **CHA** (Charisma) - Stories & Communication (job applications, STAR stories, networking)
+- **Smart Weekly Schedule** — Define core and stretch targets. The app auto-generates your 15-hour daily grids based on your personal preferences.
+- **The Engineer Tier System** — Earn XP across four core competencies to move from Junior to Staff Engineer.
+- **Dual-Mode Storage** — Use it instantly with `localStorage` or sync across devices with Supabase.
+- **Integrated Kanban** — Move tasks from backlog to done.
+- **Wins Journal** — A dedicated space to log small victories and combat imposter syndrome.
 
-Each activity you log earns fixed points. Accumulate XP to level up each stat independently. Your overall **Engineer Tier** (Junior → Mid → Senior → Staff) is based on cumulative progress across all stats.
+---
 
-## Screenshots
+## 📊 The Engineer Tier System
 
-### Weekly Schedule
-![Schedule view with core and stretch hours](src/assets/leveled-schedule.png)
+Your growth is tracked across four core competencies, each mapping to real-world engineering impact:
 
-### Gamified Stats Dashboard
-![Stats tab showing engineer tier and skill progression](src/assets/leveled-stats.png)
+| Stat    | Competency   | Activities                                              |
+| ------- | ------------ | ------------------------------------------------------- |
+| **INT** | Intelligence | LeetCode, Pattern Recognition, Mock Technical Interview |
+| **WIS** | Wisdom       | System Design, Deep Dive, Research Trade-offs           |
+| **DEX** | Dexterity    | Implementation, Bug Fixes, PRs, DevOps, Refactoring     |
+| **CHA** | Charisma     | Submit application, Develop STAR Stories, Networking    |
 
-## Stack
+> **Note:** Your overall Engineer Tier (Junior → Mid → Senior → Staff) is calculated based on cumulative XP across all four stats.
 
-- React 18 + TypeScript + Vite
-- Supabase Auth (GitHub OAuth or email/password)
-- Supabase Postgres database
-- Cloudflare Pages deployment
+<div align="center">
+  <img src="/src/assets/leveled-stats.png" width="75%" />
+</div>
 
-## Quick Start
+---
+
+## 🛠️ Tech Stack
+
+| Layer                          | Technology                 |
+| ------------------------------ | -------------------------- |
+| Frontend                       | React 18, TypeScript, Vite |
+| Storage (local, offline-first) | `localStorage`             |
+| Backend (optional)             | Supabase (Auth + Postgres) |
+| Deployment                     | Cloudflare Pages           |
+
+---
+
+## ⚡ Quick Start
+
+### Option 1: Local-Only (Zero Config)
+
+Data is saved locally to your browser.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:5174. Data auto-saves to localStorage.
+App runs at `http://localhost:5173`.
 
-## Setup
+### Option 2: Cloud Sync (Supabase)
 
-1. **Create your own Supabase project** at https://supabase.com
+1. **Supabase Setup** — Create a project at [supabase.com](https://supabase.com) using your **GitHub account email**. In your dashboard, go to **Authentication → Providers → GitHub**, create an OAuth app at [github.com/settings/developers](https://github.com/settings/developers), and copy the Client ID and Secret into Supabase.
 
-2. **Configure authentication:**
-   - **GitHub OAuth (optional):** Create OAuth App at https://github.com/settings/developers, add credentials to Supabase Authentication → Providers → GitHub
-   - **Email/password:** Enabled by default in Supabase
+2. **Environment** — Copy `.env.example` to `.env`:
 
-3. **Set environment variables:**
+```bash
+VITE_SUPABASE_URL=your_url
+VITE_SUPABASE_PUBLISHABLE_KEY=your_key
+VITE_ALLOWED_USER_EMAIL=your_github_email@example.com
+```
 
-   ```bash
-   cp .env.example .env
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxx
-   VITE_ALLOWED_USER_EMAIL=your-email@example.com
-   ```
+⚠️ `VITE_ALLOWED_USER_EMAIL` must match your GitHub email exactly.
 
-   Only this email can access the app.
+3. **Database** — Link and push migrations:
 
-4. **Run migrations:**
-   ```bash
-   supabase link --project-ref your-project-ref
-   supabase db push
-   ```
+```bash
+supabase link --project-ref your-project-ref
+supabase db push
+```
 
-## Customizing Your Schedule
+---
 
-Your weekly schedule is defined declaratively in `src/config/goals.ts` using **ACTIVITY_DISTRIBUTION**. This declares which activities you do, which days, and for how long. The app then automatically expands this into an hourly grid.
+## ⚙️ Customizing Your Schedule
 
-### How It Works
+Schedules are defined declaratively in `src/config/`. The app uses a **Distribution → Preference → Grid** pipeline.
 
-1. **Edit `ACTIVITY_DISTRIBUTION`** in `src/config/goals.ts`:
-   ```typescript
-   export const ACTIVITY_DISTRIBUTION = {
-     normal: [
-       { activity: "coding", days: ["Mon", "Tue", "Wed", "Fri"], hours: 3 },
-       { activity: "system", days: ["Mon", "Fri"], hours: 2 },
-       { activity: "workout", days: ["Mon", "Tue", "Fri"], hours: 1 },
-       // Add more activities...
-     ],
-     travel: [ /* reduced week */ ],
-     hard: [ /* high-intensity week */ ],
-   };
-   ```
+### 1. Define Activities
 
-2. **How schedules are built:**
-   - You define activities + days + hours in `ACTIVITY_DISTRIBUTION`
-   - `WEEK_TEMPLATES` (in `schedule.ts`) calls `generateWeekTemplate()` to expand those into 15-hour daily grids
-   - Time-of-day preferences (morning, afternoon, evening) are applied automatically
+Edit `src/config/goals.ts`. You can create different modes (e.g., `normal`, `travel`, `hard`):
 
-3. **Customize time-of-day preferences** in `src/config/schedule.ts`:
-   ```typescript
-   const preferences: Record<string, number> = {
-     workout: TIME_SLOTS.morning,      // 8am
-     coding: TIME_SLOTS.morning,       // 8am
-     system: TIME_SLOTS.afternoon,     // 1pm
-     retrieval: TIME_SLOTS.evening,    // 8pm
-   };
-   ```
+```typescript
+export const ACTIVITY_DISTRIBUTION = {
+  normal: [
+    { activity: "coding", days: ["Mon", "Tue", "Wed", "Fri"], hours: 3 },
+    { activity: "system", days: ["Mon", "Fri"], hours: 2 },
+  ],
+};
+```
 
-### Available Activities
+> Group similar activities on the same day to minimize context switching.
 
-`coding`, `depth`, `project`, `stories`, `workout`, `applications`, `system`, `networking`, `retrieval`, `review`, `blocked`, `free`. Stretch variants: `stretch-coding`, `stretch-depth`, etc.
+### 2. Set Time Preferences
 
-### Tips for Customization
+Control when activities appear in your grid in `src/config/schedule.ts`:
 
-- Start with your real-world constraints (meetings, family time, off days)
-- Group similar activities on the same day to minimize context switching
-- Remember: activities respect time-of-day preferences (e.g., all workouts go in morning slots)
-- Each day can hold max 15 hours — the app fills slots sequentially per activity
-- Test each week type for 2–3 weeks before tweaking
+```typescript
+const preferences: Record<string, number> = {
+  coding: TIME_SLOTS.morning, // Starts at 8am
+  system: TIME_SLOTS.afternoon, // Starts at 1pm
+};
+```
 
-## Deployment
+---
 
-1. Build: `npm run build`
-2. Create Cloudflare Pages project connected to your GitHub repo
-3. Set build command: `npm run build`, output directory: `dist`
-4. Add environment variables in Pages settings:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY`
-   - `VITE_ALLOWED_USER_EMAIL`
-5. Deploy on push to main
+## 🌐 Deployment
+
+1. **Build:** `npm run build`
+2. **Platform:** Connect your GitHub repo to Cloudflare Pages.
+3. **Build Settings:**
+   - Build command: `npm run build`
+   - Output directory: `dist`
+4. **Environment Variables:** Add your `VITE_` keys in the Cloudflare Pages settings if using Supabase.
 
 See `supabase/README.md` for database schema and migration details.
