@@ -22,7 +22,7 @@ export default function LoginPage() {
         Leveled: Personal goals tracker for developers. Sign in to continue.
       </p>
       <Auth
-        supabaseClient={supabase}
+        supabaseClient={supabase!}
         appearance={{ theme: ThemeSupa }}
         providers={["github"]}
         redirectTo={window.location.origin}

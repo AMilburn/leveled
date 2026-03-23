@@ -12,6 +12,12 @@ export default function App() {
   const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
+    // If Supabase is not configured, skip auth and use localStorage mode
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -85,6 +91,11 @@ export default function App() {
         </p>
       </div>
     );
+  }
+
+  // If no Supabase config, use localStorage mode; if configured, require session
+  if (!supabase) {
+    return <MainApp session={null} />;
   }
 
   return session ? <MainApp session={session} /> : <LoginPage />;

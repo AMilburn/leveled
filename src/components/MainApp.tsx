@@ -32,7 +32,7 @@ function getCurrentWeek(): number {
   return Math.floor(daysDiff / 7);
 }
 
-export default function MainApp({ session: _session }: { session: Session }) {
+export default function MainApp({ session: _session }: { session: Session | null }) {
   const [activeTab, setActiveTab] = useState(
     () => localStorage.getItem("jsd2_activeTab") || "schedule",
   );
@@ -40,7 +40,7 @@ export default function MainApp({ session: _session }: { session: Session }) {
     const saved = localStorage.getItem("jsd2_currentWeek");
     return saved ? parseInt(saved) : getCurrentWeek();
   });
-  const [pWeek, setPWeek] = useState(getCurrentWeek());
+  const [pWeek] = useState(getCurrentWeek());
   const [weekData, setWeekData] = useState<WeekData>({});
   const [kanban, setKanban] = useState(KANBAN_TASKS);
   const [wins, setWins] = useState<Win[]>(DEFAULT_WINS);
@@ -148,7 +148,9 @@ export default function MainApp({ session: _session }: { session: Session }) {
   }
 
   async function handleLogout(): Promise<void> {
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
   }
 
   if (loading) {
@@ -166,6 +168,21 @@ export default function MainApp({ session: _session }: { session: Session }) {
 
   return (
     <div className="app">
+      {!supabase && (
+        <div
+          style={{
+            backgroundColor: "#fef3c7",
+            border: "1px solid #fbbf24",
+            borderRadius: "6px",
+            padding: "12px 16px",
+            marginBottom: "1.5rem",
+            fontSize: "14px",
+            color: "#92400e",
+          }}
+        >
+          <strong>⚠️ Database not configured</strong> — Data is saved locally only. To enable cloud sync and multi-device access, configure Supabase in your environment variables.
+        </div>
+      )}
       <div
         style={{
           display: "flex",
@@ -215,22 +232,24 @@ export default function MainApp({ session: _session }: { session: Session }) {
           ))}
         </div>
 
-        {/* Right: Logout */}
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: "8px 16px",
-            fontSize: "13px",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "var(--color-text-secondary)",
-            fontWeight: "500",
-            minWidth: "fit-content",
-          }}
-        >
-          Log out
-        </button>
+        {/* Right: Logout (only show if Supabase is configured) */}
+        {supabase && (
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: "8px 16px",
+              fontSize: "13px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--color-text-secondary)",
+              fontWeight: "500",
+              minWidth: "fit-content",
+            }}
+          >
+            Log out
+          </button>
+        )}
       </div>
 
       {activeTab === "schedule" && (
