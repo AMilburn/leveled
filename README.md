@@ -4,7 +4,7 @@
 
 Leveled is a personal weekly planner and progress tracker designed specifically for developers. It transforms your professional growth into a gamified progression system. Stop guessing your progress, start leveling your career.
 
-<div align="center">
+<div>
   <img src="/src/assets/leveled-schedule.png" width="75%" />
 </div>
 
@@ -33,7 +33,7 @@ Your growth is tracked across four core competencies, each mapping to real-world
 
 > **Note:** Your overall Engineer Tier (Junior → Mid → Senior → Staff) is calculated based on cumulative XP across all four stats.
 
-<div align="center">
+<div>
   <img src="/src/assets/leveled-stats.png" width="75%" />
 </div>
 
