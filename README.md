@@ -128,3 +128,15 @@ const preferences: Record<string, number> = {
 4. **Environment Variables:** Add your `VITE_` keys in the Cloudflare Pages settings if using Supabase.
 
 See `supabase/README.md` for database schema and migration details.
+
+---
+
+## 🤝 Contributing
+
+Found a bug or have an idea? [Open an issue](../../issues) or see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute code.
+
+---
+
+## 📄 License
+
+MIT © 2025-2026 Amanda Milburn
