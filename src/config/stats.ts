@@ -119,19 +119,21 @@ export function calculateLevel(totalXP: number): StatProgress {
   let level = 1;
   let accumulatedXP = 0;
 
+  // Find the highest threshold exceeded
   for (let i = 0; i < LEVEL_THRESHOLDS.length; i++) {
     if (totalXP >= LEVEL_THRESHOLDS[i]) {
-      level = i + 1;
+      level = i + 2; // LEVEL_THRESHOLDS[0]=1000 XP to reach level 2, so i+2 gives correct level
       accumulatedXP = LEVEL_THRESHOLDS[i];
     } else {
       break;
     }
   }
 
+  // Get the next level's threshold
   const nextThreshold =
-    level < LEVEL_THRESHOLDS.length
-      ? LEVEL_THRESHOLDS[level]
-      : LEVEL_THRESHOLDS[level - 1] + 5000;
+    level - 1 < LEVEL_THRESHOLDS.length
+      ? LEVEL_THRESHOLDS[level - 1]
+      : LEVEL_THRESHOLDS[level - 2] + 5000;
   const xpInCurrentLevel = totalXP - accumulatedXP;
   const xpNeededForNextLevel = nextThreshold - accumulatedXP;
 
