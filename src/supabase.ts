@@ -3,7 +3,8 @@ import { WeekData, KanbanTask, Win } from "./config";
 
 // Initialize Supabase only if credentials are provided
 export const supabase: SupabaseClient | null =
-  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+  import.meta.env.VITE_SUPABASE_URL &&
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
     ? createClient(
         import.meta.env.VITE_SUPABASE_URL,
         import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
@@ -23,7 +24,11 @@ window.addEventListener("offline", () => {
 });
 
 // Sync all data to Supabase
-export async function syncAllData(weekData: WeekData, kanban: KanbanTask[], wins: Win[]): Promise<boolean> {
+export async function syncAllData(
+  weekData: WeekData,
+  kanban: KanbanTask[],
+  wins: Win[],
+): Promise<boolean> {
   if (!supabase) return false;
   if (!isOnline) return false;
 
@@ -53,7 +58,7 @@ export async function syncAllData(weekData: WeekData, kanban: KanbanTask[], wins
     if (weeksToSync.length > 0) {
       const { error: weeksError } = await supabase
         .from("weeks")
-        .upsert(weeksToSync, { onConflict: "week_number" });
+        .upsert(weeksToSync, { onConflict: "user_id,week_number" });
       if (weeksError) throw weeksError;
     }
 
@@ -91,27 +96,42 @@ export async function syncAllData(weekData: WeekData, kanban: KanbanTask[], wins
 }
 
 // Load all data from Supabase
-export async function loadFromSupabase(): Promise<{ weekData: WeekData; kanban: KanbanTask[]; wins: Win[] } | null> {
+export async function loadFromSupabase(): Promise<{
+  weekData: WeekData;
+  kanban: KanbanTask[];
+  wins: Win[];
+} | null> {
   if (!supabase) return null;
   if (!isOnline) return null;
 
   try {
-    // Load weeks
+    // Get current user
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) return null;
+
+    const userId = session.user.id;
+
+    // Load weeks for current user
     const { data: weeksData, error: weeksError } = await supabase
       .from("weeks")
-      .select("*");
+      .select("*")
+      .eq("user_id", userId);
     if (weeksError) throw weeksError;
 
-    // Load kanban tasks
+    // Load kanban tasks for current user
     const { data: kanbanData, error: kanbanError } = await supabase
       .from("kanban_tasks")
-      .select("*");
+      .select("*")
+      .eq("user_id", userId);
     if (kanbanError) throw kanbanError;
 
-    // Load wins
+    // Load wins for current user
     const { data: winsData, error: winsError } = await supabase
       .from("wins")
       .select("id, content")
+      .eq("user_id", userId)
       .order("created_at", { ascending: false });
     if (winsError) throw winsError;
 
@@ -129,7 +149,9 @@ export async function loadFromSupabase(): Promise<{ weekData: WeekData; kanban: 
       });
     }
 
-    const wins: Win[] = winsData ? winsData.map((w) => ({ id: w.id, content: w.content })) : [];
+    const wins: Win[] = winsData
+      ? winsData.map((w) => ({ id: w.id, content: w.content }))
+      : [];
 
     return {
       weekData,
@@ -141,4 +163,3 @@ export async function loadFromSupabase(): Promise<{ weekData: WeekData; kanban: 
     return null;
   }
 }
-
