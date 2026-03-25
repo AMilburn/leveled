@@ -5,6 +5,6 @@ export default defineConfig({
   plugins: [react()] as any,
   test: {
     globals: true,
-    environment: "jsdom",
+    environment: "node",
   },
 });
