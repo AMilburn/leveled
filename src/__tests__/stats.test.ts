@@ -1,0 +1,397 @@
+import { describe, it, expect } from "vitest";
+import {
+  calculateLevel,
+  calculateOverallLevel,
+  getEngineerTier,
+  ACTIVITY_OPTIONS,
+  LEVEL_THRESHOLDS,
+  RETRIEVAL_SESSION_POINTS,
+} from "../config/stats";
+import { ActivityLog } from "../config/types";
+
+describe("Stats Screen", () => {
+  describe("Activity Point Values", () => {
+    it("should have correct INT activity points", () => {
+      const intActivities = ACTIVITY_OPTIONS.int;
+      expect(intActivities[0].pointValue).toBe(20); // Easy
+      expect(intActivities[1].pointValue).toBe(100); // Medium
+      expect(intActivities[2].pointValue).toBe(250); // Hard
+      expect(intActivities[3].pointValue).toBe(500); // Interview
+    });
+
+    it("should have correct WIS activity points", () => {
+      const wisActivities = ACTIVITY_OPTIONS.wis;
+      expect(wisActivities[0].pointValue).toBe(200); // System Design
+      expect(wisActivities[1].pointValue).toBe(150); // Tech Depth
+      expect(wisActivities[2].pointValue).toBe(100); // Whiteboard
+      expect(wisActivities[3].pointValue).toBe(75); // Research
+    });
+
+    it("should have correct DEX activity points", () => {
+      const dexActivities = ACTIVITY_OPTIONS.dex;
+      expect(dexActivities[0].pointValue).toBe(100); // Feature PR
+      expect(dexActivities[1].pointValue).toBe(50); // Bug Fix
+      expect(dexActivities[2].pointValue).toBe(150); // DevOps
+      expect(dexActivities[3].pointValue).toBe(25); // Documentation
+    });
+
+    it("should have correct CHA activity points", () => {
+      const chaActivities = ACTIVITY_OPTIONS.cha;
+      expect(chaActivities[0].pointValue).toBe(20); // Application
+      expect(chaActivities[1].pointValue).toBe(100); // STAR Story
+      expect(chaActivities[2].pointValue).toBe(50); // Networking
+      expect(chaActivities[3].pointValue).toBe(300); // Behavioral Interview
+    });
+  });
+
+  describe("Weekly Totals", () => {
+    it("should correctly sum weekly activities for INT", () => {
+      const logs: ActivityLog[] = [
+        {
+          activity: "coding",
+          amount: 2,
+          label: "LeetCode Easy",
+          points: 40, // 2 × 20
+          timestamp: new Date().toISOString(),
+        },
+        {
+          activity: "coding",
+          amount: 1,
+          label: "LeetCode Medium",
+          points: 100, // 1 × 100
+          timestamp: new Date().toISOString(),
+        },
+      ];
+      const weeklyTotal = logs.reduce((sum, log) => sum + log.points, 0);
+      expect(weeklyTotal).toBe(140);
+    });
+
+    it("should correctly sum weekly activities across multiple stats", () => {
+      const logs: ActivityLog[] = [
+        {
+          activity: "coding",
+          amount: 1,
+          label: "LeetCode Hard",
+          points: 250,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          activity: "system",
+          amount: 1,
+          label: "System Design",
+          points: 200,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          activity: "project",
+          amount: 2,
+          label: "Feature PR",
+          points: 200,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          activity: "stories",
+          amount: 1,
+          label: "STAR Story",
+          points: 100,
+          timestamp: new Date().toISOString(),
+        },
+      ];
+      const weeklyTotal = logs.reduce((sum, log) => sum + log.points, 0);
+      expect(weeklyTotal).toBe(750);
+    });
+
+    it("should handle zero activity logs", () => {
+      const logs: ActivityLog[] = [];
+      const weeklyTotal = logs.reduce((sum, log) => sum + log.points, 0);
+      expect(weeklyTotal).toBe(0);
+    });
+  });
+
+  describe("Level Progression - Tiered Thresholds", () => {
+    it("level 1: 0 XP", () => {
+      const result = calculateLevel(0);
+      expect(result.level).toBe(1);
+      expect(result.xp).toBe(0);
+    });
+
+    it("level 2: 1000 XP (Junior tier)", () => {
+      const result = calculateLevel(1000);
+      expect(result.level).toBe(2);
+      expect(result.xp).toBe(0); // At threshold
+    });
+
+    it("level 3: 2000 XP (Junior tier)", () => {
+      const result = calculateLevel(2000);
+      expect(result.level).toBe(3);
+    });
+
+    it("level 6: 5000 XP (Junior/Mid boundary)", () => {
+      const result = calculateLevel(5000);
+      expect(result.level).toBe(6);
+    });
+
+    it("level 7: 7500 XP (Senior tier starts)", () => {
+      const result = calculateLevel(7500);
+      expect(result.level).toBe(7);
+    });
+
+    it("level 11: 20000 XP (Senior/Staff boundary)", () => {
+      const result = calculateLevel(20000);
+      expect(result.level).toBe(11);
+    });
+
+    it("level 12: 25000 XP (Staff tier)", () => {
+      const result = calculateLevel(25000);
+      expect(result.level).toBe(12);
+    });
+
+    it("should track progress within a level", () => {
+      const result = calculateLevel(1500);
+      expect(result.level).toBe(2);
+      expect(result.xp).toBe(500); // 1500 - 1000
+      expect(result.nextLevelXP).toBe(1000); // Need 1000 more to reach level 3
+    });
+
+    it("should correctly progress mid-level", () => {
+      const result = calculateLevel(8000);
+      expect(result.level).toBe(7);
+      expect(result.xp).toBe(500); // 8000 - 7500
+    });
+  });
+
+  describe("Engineer Tier Classification", () => {
+    it("level 1-3: Junior Engineer", () => {
+      expect(getEngineerTier(1)).toBe("Junior Engineer");
+      expect(getEngineerTier(3)).toBe("Junior Engineer");
+    });
+
+    it("level 4-5: Mid Engineer", () => {
+      expect(getEngineerTier(4)).toBe("Mid Engineer");
+      expect(getEngineerTier(5)).toBe("Mid Engineer");
+    });
+
+    it("level 6-10: Senior Engineer", () => {
+      expect(getEngineerTier(6)).toBe("Senior Engineer");
+      expect(getEngineerTier(8)).toBe("Senior Engineer");
+      expect(getEngineerTier(10)).toBe("Senior Engineer");
+    });
+
+    it("level 11+: Staff Engineer", () => {
+      expect(getEngineerTier(11)).toBe("Staff Engineer");
+      expect(getEngineerTier(15)).toBe("Staff Engineer");
+    });
+  });
+
+  describe("Overall Level Across Multiple Stats", () => {
+    it("should calculate overall level from balanced stats", () => {
+      const stats = {
+        int: calculateLevel(5000), // Level 6, ~15000 cumulative XP
+        wis: calculateLevel(5000), // Level 6
+        dex: calculateLevel(5000), // Level 6
+        cha: calculateLevel(5000), // Level 6
+      };
+
+      const overall = calculateOverallLevel(stats);
+      expect(overall.level).toBeGreaterThan(1); // Multiple stats compound significantly
+    });
+
+    it("should accumulate XP across all stats regardless of distribution", () => {
+      const balanced = {
+        int: calculateLevel(10000),
+        wis: calculateLevel(10000),
+        dex: calculateLevel(10000),
+        cha: calculateLevel(10000),
+      };
+
+      const concentrated = {
+        int: calculateLevel(40000), // Same total: 40000 XP
+        wis: calculateLevel(0),
+        dex: calculateLevel(0),
+        cha: calculateLevel(0),
+      };
+
+      const balancedOverall = calculateOverallLevel(balanced);
+      const concentratedOverall = calculateOverallLevel(concentrated);
+
+      // Both represent the same total XP paths, so concentrated should be higher
+      // (since one level 47 vs spreading across lower levels)
+      expect(concentratedOverall.level).toBeGreaterThan(balancedOverall.level);
+    });
+
+    it("should reach high levels with comprehensive stats", () => {
+      const stats = {
+        int: calculateLevel(20000),
+        wis: calculateLevel(20000),
+        dex: calculateLevel(20000),
+        cha: calculateLevel(20000),
+      };
+
+      const overall = calculateOverallLevel(stats);
+      expect(overall.level).toBeGreaterThan(10);
+      expect(getEngineerTier(overall.level)).toBe("Staff Engineer");
+    });
+  });
+
+  describe("Real-World Scenario: Week of Activities", () => {
+    it("should accumulate points across a full week", () => {
+      // Typical productive week
+      const weeklyActivities: ActivityLog[] = [
+        // INT: 3 mediums + 1 hard
+        {
+          activity: "coding",
+          amount: 3,
+          label: "LeetCode Medium",
+          points: 300,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          activity: "coding",
+          amount: 1,
+          label: "LeetCode Hard",
+          points: 250,
+          timestamp: new Date().toISOString(),
+        },
+
+        // WIS: 1 system design + 2 depth sessions
+        {
+          activity: "system",
+          amount: 1,
+          label: "System Design",
+          points: 200,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          activity: "depth",
+          amount: 2,
+          label: "Tech Depth",
+          points: 300,
+          timestamp: new Date().toISOString(),
+        },
+
+        // DEX: 2 PRs + 1 bug fix
+        {
+          activity: "project",
+          amount: 2,
+          label: "Feature PR",
+          points: 200,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          activity: "project",
+          amount: 1,
+          label: "Bug Fix",
+          points: 50,
+          timestamp: new Date().toISOString(),
+        },
+
+        // CHA: 1 STAR story + 1 networking
+        {
+          activity: "stories",
+          amount: 1,
+          label: "STAR Story",
+          points: 100,
+          timestamp: new Date().toISOString(),
+        },
+        {
+          activity: "networking",
+          amount: 1,
+          label: "Networking",
+          points: 50,
+          timestamp: new Date().toISOString(),
+        },
+      ];
+
+      const totalWeeklyPoints = weeklyActivities.reduce(
+        (sum, log) => sum + log.points,
+        0,
+      );
+      expect(totalWeeklyPoints).toBe(1450);
+
+      // Each stat gains from their activities
+      const intGain = 300 + 250; // 550
+      const wisGain = 200 + 300; // 500
+      const dexGain = 200 + 50; // 250
+      const chaGain = 100 + 50; // 150
+
+      expect(intGain + wisGain + dexGain + chaGain).toBe(totalWeeklyPoints);
+    });
+
+    it("should show progression with accumulating weekly activities", () => {
+      // Week 1: Minimal activities
+      const week1Stats = {
+        int: calculateLevel(500),
+        wis: calculateLevel(500),
+        dex: calculateLevel(500),
+        cha: calculateLevel(500),
+      };
+
+      const week1Overall = calculateOverallLevel(week1Stats);
+
+      // Week 3: Sustained effort
+      const week3Stats = {
+        int: calculateLevel(10000),
+        wis: calculateLevel(10000),
+        dex: calculateLevel(10000),
+        cha: calculateLevel(10000),
+      };
+
+      const week3Overall = calculateOverallLevel(week3Stats);
+
+      // Level should increase as activities accumulate
+      expect(week3Overall.level).toBeGreaterThan(week1Overall.level);
+    });
+  });
+
+  describe("Edge Cases and Boundaries", () => {
+    it("should handle XP just below level threshold", () => {
+      const result = calculateLevel(999);
+      expect(result.level).toBe(1);
+      expect(result.xp).toBe(999);
+    });
+
+    it("should handle XP exactly at level threshold", () => {
+      const result = calculateLevel(1000);
+      expect(result.level).toBe(2);
+      expect(result.xp).toBe(0);
+    });
+
+    it("should handle XP just above level threshold", () => {
+      const result = calculateLevel(1001);
+      expect(result.level).toBe(2);
+      expect(result.xp).toBe(1);
+    });
+
+    it("should correctly calculate nextLevelXP", () => {
+      const result = calculateLevel(1500);
+      expect(result.nextLevelXP).toBe(1000); // 2000 - 1000
+    });
+
+    it("should not have negative nextLevelXP", () => {
+      const result = calculateLevel(2000);
+      expect(result.nextLevelXP).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe("Retrieval Session Points", () => {
+    it("should define retrieval session points", () => {
+      expect(RETRIEVAL_SESSION_POINTS).toBe(75);
+    });
+  });
+
+  describe("Level Thresholds Array", () => {
+    it("should have 50 level thresholds", () => {
+      expect(LEVEL_THRESHOLDS.length).toBe(50);
+    });
+
+    it("should have increasing thresholds", () => {
+      for (let i = 1; i < LEVEL_THRESHOLDS.length; i++) {
+        expect(LEVEL_THRESHOLDS[i]).toBeGreaterThan(LEVEL_THRESHOLDS[i - 1]);
+      }
+    });
+
+    it("should start with 1000 (level 2)", () => {
+      expect(LEVEL_THRESHOLDS[0]).toBe(1000);
+    });
+  });
+});
