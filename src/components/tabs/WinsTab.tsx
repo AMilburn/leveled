@@ -17,6 +17,10 @@ export default function WinsTab({
     setNewWin("");
   };
 
+  const deleteWin = (id: string) => {
+    setWins(wins.filter((w) => w.id !== id));
+  };
+
   return (
     <div className="panel active" style={{ padding: "1rem" }}>
       <p className="tip">
@@ -56,8 +60,31 @@ export default function WinsTab({
       ) : (
         <div>
           {[...wins].reverse().map((win) => (
-            <span key={win.id} className="win-chip">
+            <span
+              key={win.id}
+              className="win-chip"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
               {win.content}
+              <button
+                onClick={() => deleteWin(win.id)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#999",
+                  cursor: "pointer",
+                  fontSize: "10px",
+                  padding: "0 2px",
+                  lineHeight: "1",
+                }}
+                title="Delete win"
+              >
+                ✕
+              </button>
             </span>
           ))}
         </div>

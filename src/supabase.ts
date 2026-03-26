@@ -88,6 +88,27 @@ export async function syncAllData(
       if (winsError) throw winsError;
     }
 
+    // Delete wins that no longer exist in local array
+    const { data: dbWins } = await supabase
+      .from("wins")
+      .select("id")
+      .eq("user_id", userId);
+
+    if (dbWins && dbWins.length > 0) {
+      const localWinIds = wins.map((w) => w.id);
+      const winsToDelete = dbWins
+        .filter((dbWin) => !localWinIds.includes(dbWin.id))
+        .map((w) => w.id);
+
+      if (winsToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from("wins")
+          .delete()
+          .in("id", winsToDelete);
+        if (deleteError) throw deleteError;
+      }
+    }
+
     return true;
   } catch (error) {
     console.error("Sync error:", error);
