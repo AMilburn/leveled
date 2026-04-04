@@ -80,7 +80,7 @@ export async function syncAllData(
         id: w.id,
         content: w.content,
         user_id: userId,
-        created_at: new Date().toISOString(),
+        created_at: w.created_at || new Date().toISOString(),
       }));
       const { error: winsError } = await supabase
         .from("wins")
@@ -151,7 +151,7 @@ export async function loadFromSupabase(): Promise<{
     // Load wins for current user
     const { data: winsData, error: winsError } = await supabase
       .from("wins")
-      .select("id, content")
+      .select("id, content, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
     if (winsError) throw winsError;
@@ -171,7 +171,7 @@ export async function loadFromSupabase(): Promise<{
     }
 
     const wins: Win[] = winsData
-      ? winsData.map((w) => ({ id: w.id, content: w.content }))
+      ? winsData.map((w) => ({ id: w.id, content: w.content, created_at: w.created_at }))
       : [];
 
     return {

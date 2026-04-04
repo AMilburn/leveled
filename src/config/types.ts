@@ -43,6 +43,7 @@ export type WeekTemplates = Record<WeekMode, WeekTemplateEntry>;
 export interface Win {
   id: string;
   content: string;
+  created_at: string; // ISO date string
 }
 
 export interface KanbanTask {
