@@ -1,0 +1,9 @@
+-- Enable RLS and grant table privileges to authenticated role
+
+ALTER TABLE weeks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kanban_tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wins ENABLE ROW LEVEL SECURITY;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE weeks TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE kanban_tasks TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE wins TO authenticated;
