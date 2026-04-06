@@ -1,7 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
-import { syncAllData, loadFromSupabase } from "../supabase";
+import {
+  syncAllData,
+  syncWeeks,
+  syncKanban,
+  syncWins,
+  loadFromSupabase,
+  deleteKanbanTask,
+  deleteWin,
+} from "../supabase";
 import {
   WEEK_TEMPLATES,
   KANBAN_TASKS,
@@ -32,12 +40,16 @@ function getCurrentWeek(): number {
   return Math.floor(daysDiff / 7);
 }
 
-export default function MainApp({ session: _session }: { session: Session | null }) {
+export default function MainApp({
+  session: _session,
+}: {
+  session: Session | null;
+}) {
   const [activeTab, setActiveTab] = useState(
-    () => localStorage.getItem("jsd2_activeTab") || "schedule",
+    () => localStorage.getItem("leveled_activeTab") || "schedule",
   );
   const [currentWeek, setCurrentWeek] = useState(() => {
-    const saved = localStorage.getItem("jsd2_currentWeek");
+    const saved = localStorage.getItem("leveled_currentWeek");
     return saved ? parseInt(saved) : getCurrentWeek();
   });
   const [pWeek] = useState(getCurrentWeek());
@@ -45,6 +57,10 @@ export default function MainApp({ session: _session }: { session: Session | null
   const [kanban, setKanban] = useState(KANBAN_TASKS);
   const [wins, setWins] = useState<Win[]>(DEFAULT_WINS);
   const [loading, setLoading] = useState(true);
+  const isLoadingRef = useRef(true);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skipKanbanSyncRef = useRef(false);
+  const skipWinsSyncRef = useRef(false);
 
   // Load data on mount
   useEffect(() => {
@@ -53,22 +69,53 @@ export default function MainApp({ session: _session }: { session: Session | null
     return () => window.removeEventListener("online", handleOnline);
   }, []);
 
-  // Save active tab to localStorage
+  // Persist the active tab across page reloads (UI state only, no DB sync needed)
   useEffect(() => {
-    localStorage.setItem("jsd2_activeTab", activeTab);
+    localStorage.setItem("leveled_activeTab", activeTab);
   }, [activeTab]);
 
-  // Save current week to localStorage
+  // Persist the selected week across page reloads (UI state only, no DB sync needed)
   useEffect(() => {
-    localStorage.setItem("jsd2_currentWeek", currentWeek.toString());
+    localStorage.setItem("leveled_currentWeek", currentWeek.toString());
   }, [currentWeek]);
 
-  // Auto-save when data changes
+  // Persist week data to localStorage immediately, then debounce the Supabase sync.
+  // Debouncing prevents a burst of network calls when multiple weeks are updated
+  // in quick succession (e.g. getOrCreateWeek firing on first render).
   useEffect(() => {
-    if (!loading) {
-      saveData();
+    if (isLoadingRef.current) return;
+    localStorage.setItem("leveled_weeks", JSON.stringify(weekData));
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => syncWeeks(weekData), 300);
+  }, [weekData]);
+
+  // Persist kanban to localStorage immediately, then debounce the Supabase sync.
+  // skipKanbanSyncRef is set to true before a delete so the upsert sync is
+  // skipped — the delete is already handled by a direct deleteKanbanTask() call.
+  useEffect(() => {
+    if (isLoadingRef.current) return;
+    localStorage.setItem("leveled_kanban", JSON.stringify(kanban));
+    if (skipKanbanSyncRef.current) {
+      skipKanbanSyncRef.current = false;
+      return;
     }
-  }, [weekData, kanban, wins, loading]);
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => syncKanban(kanban), 300);
+  }, [kanban]);
+
+  // Persist wins to localStorage immediately, then debounce the Supabase sync.
+  // skipWinsSyncRef is set to true before a delete so the upsert sync is
+  // skipped — the delete is already handled by a direct deleteWin() call.
+  useEffect(() => {
+    if (isLoadingRef.current) return;
+    localStorage.setItem("leveled_wins", JSON.stringify(wins));
+    if (skipWinsSyncRef.current) {
+      skipWinsSyncRef.current = false;
+      return;
+    }
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => syncWins(wins), 300);
+  }, [wins]);
 
   async function loadData(): Promise<void> {
     try {
@@ -85,6 +132,7 @@ export default function MainApp({ session: _session }: { session: Session | null
             ? supabaseData.wins
             : DEFAULT_WINS,
         );
+        isLoadingRef.current = false;
         setLoading(false);
         return;
       }
@@ -93,34 +141,38 @@ export default function MainApp({ session: _session }: { session: Session | null
     }
 
     try {
-      const w = localStorage.getItem("jsd2_weeks");
+      const w = localStorage.getItem("leveled_weeks");
       if (w) setWeekData(JSON.parse(w));
-      const k = localStorage.getItem("jsd2_kanban");
+      const k = localStorage.getItem("leveled_kanban");
       const parsedKanban = k ? JSON.parse(k) : null;
       setKanban(
         parsedKanban && parsedKanban.length > 0 ? parsedKanban : KANBAN_TASKS,
       );
-      const wn = localStorage.getItem("jsd2_wins");
+      const wn = localStorage.getItem("leveled_wins");
       const parsedWins = wn ? JSON.parse(wn) : null;
       setWins(parsedWins && parsedWins.length > 0 ? parsedWins : DEFAULT_WINS);
     } catch (e) {
       console.error("loadData error:", e);
     }
 
+    isLoadingRef.current = false;
     setLoading(false);
-  }
-
-  async function saveData(): Promise<void> {
-    try {
-      localStorage.setItem("jsd2_weeks", JSON.stringify(weekData));
-      localStorage.setItem("jsd2_kanban", JSON.stringify(kanban));
-      localStorage.setItem("jsd2_wins", JSON.stringify(wins));
-      await syncAllData(weekData, kanban, wins);
-    } catch (e) {}
   }
 
   function handleOnline(): void {
     syncAllData(weekData, kanban, wins);
+  }
+
+  function handleDeleteKanban(id: string): void {
+    skipKanbanSyncRef.current = true;
+    setKanban((prev) => prev.filter((t) => t.id !== id));
+    deleteKanbanTask(id);
+  }
+
+  function handleDeleteWin(id: string): void {
+    skipWinsSyncRef.current = true;
+    setWins((prev) => prev.filter((w) => w.id !== id));
+    deleteWin(id);
   }
 
   function getOrCreateWeek(weekNum: number): Week {
@@ -180,7 +232,9 @@ export default function MainApp({ session: _session }: { session: Session | null
             color: "#92400e",
           }}
         >
-          <strong>⚠️ Database not configured</strong> — Data is saved locally only. To enable cloud sync and multi-device access, configure Supabase in your environment variables.
+          <strong>⚠️ Database not configured</strong> — Data is saved locally
+          only. To enable cloud sync and multi-device access, configure Supabase
+          in your environment variables.
         </div>
       )}
       <div
@@ -261,7 +315,11 @@ export default function MainApp({ session: _session }: { session: Session | null
         />
       )}
       {activeTab === "kanban" && (
-        <KanbanTab kanban={kanban} setKanban={setKanban} />
+        <KanbanTab
+          kanban={kanban}
+          setKanban={setKanban}
+          onDelete={handleDeleteKanban}
+        />
       )}
       {activeTab === "progress" && (
         <ProgressTab
@@ -271,7 +329,9 @@ export default function MainApp({ session: _session }: { session: Session | null
           getOrCreateWeek={getOrCreateWeek}
         />
       )}
-      {activeTab === "wins" && <WinsTab wins={wins} setWins={setWins} />}
+      {activeTab === "wins" && (
+        <WinsTab wins={wins} setWins={setWins} onDelete={handleDeleteWin} />
+      )}
     </div>
   );
 }

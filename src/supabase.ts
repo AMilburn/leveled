@@ -23,97 +23,91 @@ window.addEventListener("offline", () => {
   console.log("Offline - using localStorage");
 });
 
-// Sync all data to Supabase
+// Cache the session so repeated calls don't hit the network
+let cachedUserId: string | null = null;
+
+async function getUserId(): Promise<string | null> {
+  if (cachedUserId) return cachedUserId;
+  if (!supabase) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  cachedUserId = session?.user.id ?? null;
+  return cachedUserId;
+}
+
+// Clear cache on sign out
+if (supabase) {
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_OUT") cachedUserId = null;
+  });
+}
+
+export async function syncWeeks(weekData: WeekData): Promise<void> {
+  if (!supabase || !isOnline) return;
+  const userId = await getUserId();
+  if (!userId) return;
+  const weeksToSync = Object.entries(weekData).map(([key, data]) => ({
+    week_number: parseInt(key.replace("w", "")),
+    week_type: data.mode,
+    schedule: data.slots,
+    counts: data.counts,
+    reflection: data.reflection,
+    activity_logs: data.activityLogs || [],
+    user_id: userId,
+  }));
+  if (weeksToSync.length === 0) return;
+  const { error } = await supabase.from("weeks").upsert(weeksToSync, { onConflict: "user_id,week_number" });
+  if (error) console.error("Sync error (weeks):", error);
+}
+
+export async function syncKanban(kanban: KanbanTask[]): Promise<void> {
+  if (!supabase || !isOnline) return;
+  const userId = await getUserId();
+  if (!userId) return;
+  if (kanban.length === 0) return;
+  const { error } = await supabase.from("kanban_tasks").upsert(
+    kanban.map((task) => ({ ...task, user_id: userId })),
+    { onConflict: "id" },
+  );
+  if (error) console.error("Sync error (kanban):", error);
+}
+
+export async function syncWins(wins: Win[]): Promise<void> {
+  if (!supabase || !isOnline) return;
+  const userId = await getUserId();
+  if (!userId) return;
+  if (wins.length === 0) return;
+  const { error } = await supabase.from("wins").upsert(
+    wins.map((w) => ({ id: w.id, content: w.content, user_id: userId, created_at: w.created_at || new Date().toISOString() })),
+    { onConflict: "id" },
+  );
+  if (error) console.error("Sync error (wins):", error);
+}
+
+// Kept for the handleOnline full re-sync
 export async function syncAllData(
   weekData: WeekData,
   kanban: KanbanTask[],
   wins: Win[],
 ): Promise<boolean> {
-  if (!supabase) return false;
-  if (!isOnline) return false;
-
   try {
-    // Get current user
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) return false;
-
-    const userId = session.user.id;
-
-    // Upsert weeks (one row per week)
-    const weeksToSync = Object.entries(weekData).map(([key, data]) => {
-      const weekNum = parseInt(key.replace("w", ""));
-      return {
-        week_number: weekNum,
-        week_type: data.mode,
-        schedule: data.slots,
-        counts: data.counts,
-        reflection: data.reflection,
-        activity_logs: data.activityLogs || [],
-        user_id: userId,
-      };
-    });
-
-    if (weeksToSync.length > 0) {
-      const { error: weeksError } = await supabase
-        .from("weeks")
-        .upsert(weeksToSync, { onConflict: "user_id,week_number" });
-      if (weeksError) throw weeksError;
-    }
-
-    // Upsert kanban tasks
-    if (kanban.length > 0) {
-      const kanbanToSync = kanban.map((task) => ({
-        ...task,
-        user_id: userId,
-      }));
-      const { error: kanbanError } = await supabase
-        .from("kanban_tasks")
-        .upsert(kanbanToSync, { onConflict: "id" });
-      if (kanbanError) throw kanbanError;
-    }
-
-    // Upsert wins
-    if (wins.length > 0) {
-      const winsToSync = wins.map((w) => ({
-        id: w.id,
-        content: w.content,
-        user_id: userId,
-        created_at: w.created_at || new Date().toISOString(),
-      }));
-      const { error: winsError } = await supabase
-        .from("wins")
-        .upsert(winsToSync, { onConflict: "id" });
-      if (winsError) throw winsError;
-    }
-
-    // Delete wins that no longer exist in local array
-    const { data: dbWins } = await supabase
-      .from("wins")
-      .select("id")
-      .eq("user_id", userId);
-
-    if (dbWins && dbWins.length > 0) {
-      const localWinIds = wins.map((w) => w.id);
-      const winsToDelete = dbWins
-        .filter((dbWin) => !localWinIds.includes(dbWin.id))
-        .map((w) => w.id);
-
-      if (winsToDelete.length > 0) {
-        const { error: deleteError } = await supabase
-          .from("wins")
-          .delete()
-          .in("id", winsToDelete);
-        if (deleteError) throw deleteError;
-      }
-    }
-
+    await Promise.all([syncWeeks(weekData), syncKanban(kanban), syncWins(wins)]);
     return true;
   } catch (error) {
     console.error("Sync error:", error);
     return false;
   }
+}
+
+// Delete a single kanban task from Supabase
+export async function deleteKanbanTask(id: string): Promise<void> {
+  if (!supabase || !isOnline) return;
+  await supabase.from("kanban_tasks").delete().eq("id", id);
+}
+
+// Delete a single win from Supabase
+export async function deleteWin(id: string): Promise<void> {
+  if (!supabase || !isOnline) return;
+  await supabase.from("wins").delete().eq("id", id);
 }
 
 // Load all data from Supabase

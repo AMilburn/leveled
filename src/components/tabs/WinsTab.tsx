@@ -34,9 +34,11 @@ function todayLocalISO(): string {
 export default function WinsTab({
   wins,
   setWins,
+  onDelete,
 }: {
   wins: Win[];
   setWins: (wins: Win[]) => void;
+  onDelete: (id: string) => void;
 }) {
   const [newWin, setNewWin] = useState("");
   const [winDate, setWinDate] = useState(todayLocalISO);
@@ -51,7 +53,7 @@ export default function WinsTab({
   };
 
   const deleteWin = (id: string) => {
-    setWins(wins.filter((w) => w.id !== id));
+    onDelete(id);
   };
 
   // Group wins by calendar week (Mon start)
