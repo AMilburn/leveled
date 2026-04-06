@@ -12,12 +12,13 @@ const KANBAN_TAG_COLORS = Object.fromEntries(
 
 const getTagColor = (tag: string) => KANBAN_TAG_COLORS[tag] || { bg: '#f0f0f0', text: '#333' };
 
-export default function KanbanTab({ kanban, setKanban }: { kanban: KanbanTask[]; setKanban: (kanban: KanbanTask[]) => void }) {
+export default function KanbanTab({ kanban, setKanban, onDelete }: { kanban: KanbanTask[]; setKanban: (kanban: KanbanTask[]) => void; onDelete: (id: string) => void }) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskTag, setNewTaskTag] = useState('coding');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editNote, setEditNote] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const addTask = () => {
     if (!newTaskTitle.trim()) return;
@@ -47,9 +48,8 @@ export default function KanbanTab({ kanban, setKanban }: { kanban: KanbanTask[];
   };
 
   const deleteTask = (id: string) => {
-    if (confirm('Delete this task?')) {
-      setKanban(kanban.filter(t => t.id !== id));
-    }
+    setConfirmDeleteId(null);
+    onDelete(id);
   };
 
   return (
@@ -101,7 +101,14 @@ export default function KanbanTab({ kanban, setKanban }: { kanban: KanbanTask[];
                           {ci > 0 && <button onClick={() => moveTask(card.id, -1)} style={{ padding: '3px 6px', fontSize: '0.75rem', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer' }}>← back</button>}
                           {ci < 3 && <button onClick={() => moveTask(card.id, 1)} style={{ padding: '3px 6px', fontSize: '0.75rem', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer' }}>forward →</button>}
                           <button onClick={() => startEdit(card)} style={{ padding: '3px 6px', fontSize: '0.75rem', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer' }}>edit</button>
-                          <button onClick={() => deleteTask(card.id)} style={{ padding: '3px 6px', fontSize: '0.75rem', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer' }}>✕</button>
+                          {confirmDeleteId === card.id ? (
+                            <>
+                              <button onClick={() => deleteTask(card.id)} style={{ padding: '3px 6px', fontSize: '0.75rem', background: '#e53e3e', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}>delete?</button>
+                              <button onClick={() => setConfirmDeleteId(null)} style={{ padding: '3px 6px', fontSize: '0.75rem', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer' }}>cancel</button>
+                            </>
+                          ) : (
+                            <button onClick={() => setConfirmDeleteId(card.id)} style={{ padding: '3px 6px', fontSize: '0.75rem', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer' }}>✕</button>
+                          )}
                         </div>
                       </>
                     )}
