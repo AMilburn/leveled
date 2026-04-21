@@ -144,24 +144,18 @@ export function calculateLevel(totalXP: number): StatProgress {
   };
 }
 
-// Calculate overall level from cumulative XP across all stats
-export function calculateOverallLevel(stats: EngineerStats): StatProgress {
-  function getTotalXP(stat: StatProgress): number {
-    let total = 0;
-    for (let i = 0; i < stat.level - 1; i++) {
-      total += LEVEL_THRESHOLDS[i];
-    }
-    total += stat.xp;
-    return total;
-  }
+// Calculate overall level as the average of the four stat levels
+export function calculateOverallLevel(stats: EngineerStats): StatProgress & { avg: number } {
+  const avg = (stats.int.level + stats.wis.level + stats.dex.level + stats.cha.level) / 4;
+  const level = Math.floor(avg);
+  const fractional = avg - level;
 
-  const totalXP =
-    getTotalXP(stats.int) +
-    getTotalXP(stats.wis) +
-    getTotalXP(stats.dex) +
-    getTotalXP(stats.cha);
-
-  return calculateLevel(totalXP);
+  return {
+    level,
+    avg,
+    xp: Math.round(fractional * 100),
+    nextLevelXP: 100,
+  };
 }
 
 // Identify which stat needs the most growth (lowest level, then lowest XP)

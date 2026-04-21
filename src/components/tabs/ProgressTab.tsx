@@ -211,8 +211,7 @@ export default function ProgressTab({
             <div
               style={{ textAlign: "right", fontSize: "11px", color: "#999" }}
             >
-              {overallLevel.xp.toLocaleString()} /{" "}
-              {overallLevel.nextLevelXP.toLocaleString()} XP
+              avg {overallLevel.avg.toFixed(2)}
             </div>
           </div>
           <div

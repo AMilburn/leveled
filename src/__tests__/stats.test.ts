@@ -184,28 +184,29 @@ describe("Stats Screen", () => {
   });
 
   describe("Overall Level Across Multiple Stats", () => {
-    it("should calculate overall level from balanced stats", () => {
+    it("should calculate overall level as the average of stat levels", () => {
       const stats = {
-        int: calculateLevel(5000), // Level 6, ~15000 cumulative XP
+        int: calculateLevel(5000), // Level 6
         wis: calculateLevel(5000), // Level 6
         dex: calculateLevel(5000), // Level 6
         cha: calculateLevel(5000), // Level 6
       };
 
       const overall = calculateOverallLevel(stats);
-      expect(overall.level).toBeGreaterThan(1); // Multiple stats compound significantly
+      expect(overall.level).toBe(6); // floor(avg(6,6,6,6)) = 6
+      expect(overall.avg).toBe(6);
     });
 
-    it("should accumulate XP across all stats regardless of distribution", () => {
+    it("should reward balanced stats over concentrated investment", () => {
       const balanced = {
-        int: calculateLevel(10000),
+        int: calculateLevel(10000), // ~level 8
         wis: calculateLevel(10000),
         dex: calculateLevel(10000),
         cha: calculateLevel(10000),
       };
 
       const concentrated = {
-        int: calculateLevel(40000), // Same total: 40000 XP
+        int: calculateLevel(40000), // high level, but others are level 1
         wis: calculateLevel(0),
         dex: calculateLevel(0),
         cha: calculateLevel(0),
@@ -214,14 +215,12 @@ describe("Stats Screen", () => {
       const balancedOverall = calculateOverallLevel(balanced);
       const concentratedOverall = calculateOverallLevel(concentrated);
 
-      // Both represent the same total XP paths, so concentrated should be higher
-      // (since one level 47 vs spreading across lower levels)
-      expect(concentratedOverall.level).toBeGreaterThan(balancedOverall.level);
+      expect(balancedOverall.level).toBeGreaterThan(concentratedOverall.level);
     });
 
     it("should reach high levels with comprehensive stats", () => {
       const stats = {
-        int: calculateLevel(20000),
+        int: calculateLevel(20000), // ~level 11
         wis: calculateLevel(20000),
         dex: calculateLevel(20000),
         cha: calculateLevel(20000),
@@ -230,6 +229,20 @@ describe("Stats Screen", () => {
       const overall = calculateOverallLevel(stats);
       expect(overall.level).toBeGreaterThan(10);
       expect(getEngineerTier(overall.level)).toBe("Staff Engineer");
+    });
+
+    it("should return fractional avg progress toward next level", () => {
+      const stats = {
+        int: { level: 3, xp: 500, nextLevelXP: 1000 },
+        wis: { level: 2, xp: 200, nextLevelXP: 1000 },
+        dex: { level: 1, xp: 0, nextLevelXP: 1000 },
+        cha: { level: 2, xp: 0, nextLevelXP: 1000 },
+      };
+
+      const overall = calculateOverallLevel(stats);
+      expect(overall.avg).toBe(2); // (3+2+1+2)/4 = 2.0
+      expect(overall.level).toBe(2);
+      expect(overall.xp).toBe(0); // 0% progress toward level 3
     });
   });
 
