@@ -68,6 +68,7 @@ export interface ActivityLog {
   label: string; // Activity label (e.g., "LeetCode Medium", "System Design Sketch")
   points: number; // Total points earned (pointValue × amount, or custom for hours)
   timestamp: string;
+  note?: string;
 }
 
 export interface Week {

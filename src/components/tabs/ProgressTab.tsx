@@ -1,4 +1,5 @@
 import { useState } from "react";
+import LogActivityModal from "../LogActivityModal";
 import { Week, WeekData, ActivityLog } from "../../config";
 import {
   STATS,
@@ -26,6 +27,7 @@ export default function ProgressTab({
   const [saved, setSaved] = useState(false);
   const [loggingActivity, setLoggingActivity] = useState<string | null>(null);
   const [loggingAmount, setLoggingAmount] = useState("1");
+  const [loggingNote, setLoggingNote] = useState("");
   const wd = getOrCreateWeek(pWeek);
 
   // Calculate player stats from activity logs
@@ -98,7 +100,7 @@ export default function ProgressTab({
     setTimeout(() => setSaved(false), 1500);
   };
 
-  const logActivity = (label: string, amount: number) => {
+  const logActivity = (label: string, amount: number, note: string) => {
     // Find activity option by label
     let mapping: any = null;
     for (const s of ["int", "wis", "dex", "cha"] as StatType[]) {
@@ -120,6 +122,7 @@ export default function ProgressTab({
       label,
       points,
       timestamp: new Date().toISOString(),
+      ...(note.trim() && { note: note.trim() }),
     };
 
     setWeekData((prev) => {
@@ -135,6 +138,7 @@ export default function ProgressTab({
 
     setLoggingActivity(null);
     setLoggingAmount("1");
+    setLoggingNote("");
   };
 
   const deleteActivityLog = (index: number) => {
@@ -159,8 +163,26 @@ export default function ProgressTab({
     return pointsByLabel;
   };
 
+  const closeModal = () => {
+    setLoggingActivity(null);
+    setLoggingAmount("1");
+    setLoggingNote("");
+  };
+
   return (
     <div className="panel active" style={{ padding: "1rem" }}>
+
+      {loggingActivity && (
+        <LogActivityModal
+          activityLabel={loggingActivity}
+          amount={loggingAmount}
+          note={loggingNote}
+          onAmountChange={setLoggingAmount}
+          onNoteChange={setLoggingNote}
+          onConfirm={() => logActivity(loggingActivity, parseInt(loggingAmount) || 1, loggingNote)}
+          onCancel={closeModal}
+        />
+      )}
       {/* Engineer Tier Subtitle */}
       <div
         style={{
@@ -536,6 +558,11 @@ export default function ProgressTab({
                         }}
                       >
                         {statDef?.name} • +{log.points} pts • {timeStr}
+                      {log.note && (
+                        <div style={{ color: "#888", marginTop: "2px", fontStyle: "italic" }}>
+                          {log.note}
+                        </div>
+                      )}
                       </div>
                     </div>
                     <button
@@ -694,81 +721,6 @@ export default function ProgressTab({
             )}
           </div>
 
-          {/* Show amount input when an activity is selected */}
-          {loggingActivity && (
-            <div
-              style={{
-                display: "flex",
-                gap: "8px",
-                alignItems: "center",
-                paddingTop: "8px",
-                borderTop: "1px solid #eee",
-              }}
-            >
-              <input
-                type="number"
-                min="1"
-                value={loggingAmount}
-                onChange={(e) => setLoggingAmount(e.target.value)}
-                placeholder="Amount"
-                style={{
-                  width: "60px",
-                  padding: "6px",
-                  fontSize: "11px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                }}
-              />
-              <span
-                style={{ fontSize: "11px", color: "#666", minWidth: "60px" }}>
-                {(() => {
-                  for (const s of ["int", "wis", "dex", "cha"] as StatType[]) {
-                    const found = ACTIVITY_OPTIONS[s].find(
-                      (m: any) => m.label === loggingActivity,
-                    );
-                    if (found) return found.unit;
-                  }
-                  return SPECIAL_ACTIVITIES.find(
-                    (m: any) => m.label === loggingActivity,
-                  )?.unit || "unit";
-                })()}
-              </span>
-              <button
-                onClick={() =>
-                  logActivity(loggingActivity, parseInt(loggingAmount) || 1)
-                }
-                style={{
-                  padding: "6px 12px",
-                  fontSize: "11px",
-                  background: "#534AB7",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontWeight: "500",
-                  flex: 1,
-                }}
-              >
-                Log
-              </button>
-              <button
-                onClick={() => {
-                  setLoggingActivity(null);
-                  setLoggingAmount("1");
-                }}
-                style={{
-                  padding: "6px 10px",
-                  fontSize: "11px",
-                  background: "#f0f0f0",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

@@ -3,6 +3,8 @@ import {
   calculateLevel,
   calculateOverallLevel,
   getEngineerTier,
+  getActivityMeta,
+  calculatePointsPreview,
   ACTIVITY_OPTIONS,
   LEVEL_THRESHOLDS,
   RETRIEVAL_SESSION_POINTS,
@@ -399,44 +401,58 @@ describe("Stats Screen", () => {
 
   describe("Activity Log Modal Logic", () => {
     describe("points preview calculation", () => {
-      it("should multiply pointValue by amount for whole numbers", () => {
-        const activity = ACTIVITY_OPTIONS.int.find((a) => a.label === "LeetCode Medium")!;
-        expect(activity.pointValue * 3).toBe(300);
+      it("should calculate preview for LeetCode Medium × 3", () => {
+        const meta = getActivityMeta("LeetCode Medium")!;
+        expect(calculatePointsPreview(meta.pointValue, 3)).toBe(300);
       });
 
       it("should calculate preview for hourly activities", () => {
-        const activity = ACTIVITY_OPTIONS.wis.find((a) => a.label === "Tech Depth Deep Dive")!;
-        expect(activity.pointValue * 2).toBe(300); // 2 hours
+        const meta = getActivityMeta("Tech Depth Deep Dive")!;
+        expect(calculatePointsPreview(meta.pointValue, 2)).toBe(300);
       });
 
-      it("should handle amount of 1 (default)", () => {
-        const activity = ACTIVITY_OPTIONS.dex.find((a) => a.label === "Take-Home Assignment")!;
-        expect(activity.pointValue * 1).toBe(350);
+      it("should calculate preview for take-home assignment × 1", () => {
+        const meta = getActivityMeta("Take-Home Assignment")!;
+        expect(calculatePointsPreview(meta.pointValue, 1)).toBe(350);
       });
     });
 
     describe("activity lookup by label", () => {
-      it("should find INT activities by label", () => {
-        const found = (["int", "wis", "dex", "cha"] as const)
-          .flatMap((s) => ACTIVITY_OPTIONS[s])
-          .find((a) => a.label === "Real Technical Interview");
-        expect(found).toBeDefined();
-        expect(found!.pointValue).toBe(750);
+      it("should find an INT activity and return its stat", () => {
+        const meta = getActivityMeta("Real Technical Interview");
+        expect(meta).not.toBeNull();
+        expect(meta!.stat).toBe("int");
+        expect(meta!.pointValue).toBe(750);
       });
 
-      it("should find CHA activities by label", () => {
-        const found = (["int", "wis", "dex", "cha"] as const)
-          .flatMap((s) => ACTIVITY_OPTIONS[s])
-          .find((a) => a.label === "Real Behavioral Interview");
-        expect(found).toBeDefined();
-        expect(found!.pointValue).toBe(400);
+      it("should find a CHA activity and return its stat", () => {
+        const meta = getActivityMeta("Real Behavioral Interview");
+        expect(meta).not.toBeNull();
+        expect(meta!.stat).toBe("cha");
+        expect(meta!.pointValue).toBe(400);
       });
 
-      it("should return undefined for unknown label", () => {
-        const found = (["int", "wis", "dex", "cha"] as const)
-          .flatMap((s) => ACTIVITY_OPTIONS[s])
-          .find((a) => a.label === "Not A Real Activity");
-        expect(found).toBeUndefined();
+      it("should return null for an unknown label", () => {
+        expect(getActivityMeta("Not A Real Activity")).toBeNull();
+      });
+
+      it("should include the unit in the returned meta", () => {
+        const meta = getActivityMeta("LeetCode Medium");
+        expect(meta!.unit).toBe("problem");
+      });
+    });
+
+    describe("calculatePointsPreview", () => {
+      it("should multiply pointValue by amount", () => {
+        expect(calculatePointsPreview(100, 3)).toBe(300);
+      });
+
+      it("should default to 1 when amount is 0", () => {
+        expect(calculatePointsPreview(100, 0)).toBe(100);
+      });
+
+      it("should handle large amounts", () => {
+        expect(calculatePointsPreview(20, 10)).toBe(200);
       });
     });
 
