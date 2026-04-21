@@ -92,6 +92,19 @@ export default function ScheduleTab({
     }));
   };
 
+  const clearWeek = () => {
+    if (!confirm("Remove all scheduled activities? Week type and goals will be kept."))
+      return;
+    const blank = Object.fromEntries(DAYS.map((day) => [day, Array(15).fill("free")]));
+    setWeekData((prev) => ({
+      ...prev,
+      [`w${currentWeek}`]: {
+        ...prev[`w${currentWeek}`],
+        slots: blank,
+      },
+    }));
+  };
+
   const calculateHours = () => {
     let core = 0,
       stretch = 0;
@@ -166,10 +179,17 @@ export default function ScheduleTab({
           >
             reset to template
           </button>
+          <button
+            onClick={clearWeek}
+            style={{ fontSize: "12px", padding: "4px 12px" }}
+          >
+            clear week
+          </button>
         </div>
       </div>
 
-      <div className="week-mode-row" style={{ marginTop: "1rem" }}>
+      <div className="week-mode-row" style={{ marginTop: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+        <label style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}>Use template:</label>
         <select
           value={wd.mode}
           onChange={(e) => setMode(e.target.value as WeekMode)}
