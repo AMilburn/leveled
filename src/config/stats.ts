@@ -16,28 +16,28 @@ export const STATS: Record<StatType, StatDefinition> = {
     key: "int",
     name: "INT",
     fullName: "Intelligence",
-    description: "Coding & Pattern Recognition",
+    description: "Algorithms, problem-solving, and technical interview prep",
     color: "#534AB7",
   },
   wis: {
     key: "wis",
     name: "WIS",
     fullName: "Wisdom",
-    description: "System Design & Tech Depth",
+    description: "System design, architecture, and deep technical knowledge",
     color: "#0F6E56",
   },
   dex: {
     key: "dex",
     name: "DEX",
     fullName: "Dexterity",
-    description: "Implementation & Tooling",
+    description: "Building, shipping, and hands-on implementation",
     color: "#854F0B",
   },
   cha: {
     key: "cha",
     name: "CHA",
     fullName: "Charisma",
-    description: "Stories & Communication",
+    description: "Communication, storytelling, and interview presence",
     color: "#185FA5",
   },
 };
@@ -56,24 +56,47 @@ export const ACTIVITY_OPTIONS: Record<StatType, ActivityOption[]> = {
     { activity: "coding", label: "LeetCode Medium", unit: "problem", pointValue: 100 },
     { activity: "coding", label: "LeetCode Hard", unit: "problem", pointValue: 250 },
     { activity: "coding", label: "Mock Technical Interview", unit: "session", pointValue: 500 },
+    { activity: "coding", label: "Real Technical Interview", unit: "interview", pointValue: 750 },
+    { activity: "review", label: "Code Review Session", unit: "session", pointValue: 75 },
+    { activity: "retrieval", label: "Flashcard / Retrieval Practice", unit: "session", pointValue: 75 },
+    { activity: "coding", label: "Problem Approach Review", unit: "problem", pointValue: 30 },
+    { activity: "review", label: "Past Project Review & Documentation", unit: "session", pointValue: 100 },
+    { activity: "coding", label: "Algorithm / DS Study Session", unit: "hour", pointValue: 75 },
   ],
   wis: [
     { activity: "system", label: "System Design Sketch (Full Flow)", unit: "session", pointValue: 200 },
     { activity: "depth", label: "Tech Depth Deep Dive", unit: "hour", pointValue: 150 },
     { activity: "depth", label: "Whiteboard Walkthrough", unit: "session", pointValue: 100 },
     { activity: "depth", label: "Researching Trade-offs", unit: "session", pointValue: 75 },
+    { activity: "depth", label: "System Design Reading (Book/Article)", unit: "hour", pointValue: 100 },
+    { activity: "depth", label: "System Design Course / Video", unit: "hour", pointValue: 75 },
+    { activity: "depth", label: "Engineering Blog / Case Study", unit: "article", pointValue: 50 },
+    { activity: "depth", label: "Technical Talk / YouTube / Conference", unit: "video", pointValue: 75 },
+    { activity: "review", label: "Reading an Unfamiliar Codebase", unit: "hour", pointValue: 100 },
   ],
   dex: [
     { activity: "project", label: "Feature Implementation (PR)", unit: "pr", pointValue: 100 },
     { activity: "project", label: "Bug Fix/Refactor", unit: "fix", pointValue: 50 },
     { activity: "project", label: "DevOps/CI-CD Setup", unit: "task", pointValue: 150 },
     { activity: "project", label: "Documentation/README", unit: "update", pointValue: 25 },
+    { activity: "project", label: "Writing Tests", unit: "session", pointValue: 75 },
+    { activity: "project", label: "Open Source Contribution (PR Merged)", unit: "pr", pointValue: 200 },
+    { activity: "project", label: "Take-Home Assignment", unit: "assignment", pointValue: 350 },
+    { activity: "project", label: "Learn New Framework (Hands-On)", unit: "hour", pointValue: 100 },
+    { activity: "project", label: "Technical Demo / Presentation Prep", unit: "session", pointValue: 150 },
+    { activity: "project", label: "Database Schema Design", unit: "session", pointValue: 100 },
+    { activity: "project", label: "Script / Automation", unit: "script", pointValue: 75 },
   ],
   cha: [
     { activity: "stories", label: "High-Quality Job Application", unit: "application", pointValue: 20 },
-    { activity: "stories", label: "STAR Story (Recorded & Reviewed)", unit: "story", pointValue: 100 },
+    { activity: "stories", label: "STAR Story Draft", unit: "story", pointValue: 40 },
+    { activity: "stories", label: "STAR Story Refined", unit: "story", pointValue: 60 },
+    { activity: "stories", label: "STAR Story Practiced", unit: "story", pointValue: 80 },
+    { activity: "stories", label: "Interview Answer Prep", unit: "answer", pointValue: 40 },
     { activity: "networking", label: "Networking Message/Coffee Chat", unit: "chat", pointValue: 50 },
     { activity: "networking", label: "Mock Behavioral Interview", unit: "interview", pointValue: 300 },
+    { activity: "networking", label: "Real Behavioral Interview", unit: "interview", pointValue: 400 },
+    { activity: "applications", label: "Company Research", unit: "company", pointValue: 50 },
   ],
 };
 
@@ -156,6 +179,23 @@ export function calculateOverallLevel(stats: EngineerStats): StatProgress & { av
     xp: Math.round(fractional * 100),
     nextLevelXP: 100,
   };
+}
+
+// Find an activity and its stat by label
+export function getActivityMeta(
+  label: string,
+): (ActivityOption & { stat: StatType }) | (ActivityOption & { stat: null }) | null {
+  for (const s of ["int", "wis", "dex", "cha"] as StatType[]) {
+    const found = ACTIVITY_OPTIONS[s].find((m) => m.label === label);
+    if (found) return { ...found, stat: s };
+  }
+  const special = SPECIAL_ACTIVITIES.find((m) => m.label === label);
+  return special ? { ...special, stat: null } : null;
+}
+
+// Calculate points earned: pointValue × amount (amount defaults to 1)
+export function calculatePointsPreview(pointValue: number, amount: number): number {
+  return pointValue * (Math.max(1, amount || 1));
 }
 
 // Identify which stat needs the most growth (lowest level, then lowest XP)

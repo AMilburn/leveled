@@ -37,10 +37,15 @@ describe("Stats Screen", () => {
 
     it("should have correct CHA activity points", () => {
       const chaActivities = ACTIVITY_OPTIONS.cha;
-      expect(chaActivities[0].pointValue).toBe(20); // Application
-      expect(chaActivities[1].pointValue).toBe(100); // STAR Story
-      expect(chaActivities[2].pointValue).toBe(50); // Networking
-      expect(chaActivities[3].pointValue).toBe(300); // Behavioral Interview
+      expect(chaActivities[0].pointValue).toBe(20);  // Application
+      expect(chaActivities[1].pointValue).toBe(40);  // STAR Story Draft
+      expect(chaActivities[2].pointValue).toBe(60);  // STAR Story Refined
+      expect(chaActivities[3].pointValue).toBe(80);  // STAR Story Practiced
+      expect(chaActivities[4].pointValue).toBe(40);  // Interview Answer Prep
+      expect(chaActivities[5].pointValue).toBe(50);  // Networking
+      expect(chaActivities[6].pointValue).toBe(300); // Mock Behavioral Interview
+      expect(chaActivities[7].pointValue).toBe(400); // Real Behavioral Interview
+      expect(chaActivities[8].pointValue).toBe(50);  // Company Research
     });
   });
 
@@ -389,6 +394,146 @@ describe("Stats Screen", () => {
   describe("Retrieval Session Points", () => {
     it("should define retrieval session points", () => {
       expect(RETRIEVAL_SESSION_POINTS).toBe(75);
+    });
+  });
+
+  describe("Activity Log Modal Logic", () => {
+    describe("points preview calculation", () => {
+      it("should multiply pointValue by amount for whole numbers", () => {
+        const activity = ACTIVITY_OPTIONS.int.find((a) => a.label === "LeetCode Medium")!;
+        expect(activity.pointValue * 3).toBe(300);
+      });
+
+      it("should calculate preview for hourly activities", () => {
+        const activity = ACTIVITY_OPTIONS.wis.find((a) => a.label === "Tech Depth Deep Dive")!;
+        expect(activity.pointValue * 2).toBe(300); // 2 hours
+      });
+
+      it("should handle amount of 1 (default)", () => {
+        const activity = ACTIVITY_OPTIONS.dex.find((a) => a.label === "Take-Home Assignment")!;
+        expect(activity.pointValue * 1).toBe(350);
+      });
+    });
+
+    describe("activity lookup by label", () => {
+      it("should find INT activities by label", () => {
+        const found = (["int", "wis", "dex", "cha"] as const)
+          .flatMap((s) => ACTIVITY_OPTIONS[s])
+          .find((a) => a.label === "Real Technical Interview");
+        expect(found).toBeDefined();
+        expect(found!.pointValue).toBe(750);
+      });
+
+      it("should find CHA activities by label", () => {
+        const found = (["int", "wis", "dex", "cha"] as const)
+          .flatMap((s) => ACTIVITY_OPTIONS[s])
+          .find((a) => a.label === "Real Behavioral Interview");
+        expect(found).toBeDefined();
+        expect(found!.pointValue).toBe(400);
+      });
+
+      it("should return undefined for unknown label", () => {
+        const found = (["int", "wis", "dex", "cha"] as const)
+          .flatMap((s) => ACTIVITY_OPTIONS[s])
+          .find((a) => a.label === "Not A Real Activity");
+        expect(found).toBeUndefined();
+      });
+    });
+
+    describe("ActivityLog note field", () => {
+      it("should store a note on an activity log", () => {
+        const log: ActivityLog = {
+          activity: "coding",
+          amount: 1,
+          label: "LeetCode Hard",
+          points: 250,
+          timestamp: new Date().toISOString(),
+          note: "Two Trees problem — recursion with backtracking",
+        };
+        expect(log.note).toBe("Two Trees problem — recursion with backtracking");
+      });
+
+      it("should allow logs without a note", () => {
+        const log: ActivityLog = {
+          activity: "coding",
+          amount: 1,
+          label: "LeetCode Easy",
+          points: 20,
+          timestamp: new Date().toISOString(),
+        };
+        expect(log.note).toBeUndefined();
+      });
+
+      it("should not affect points calculation when note is present", () => {
+        const withNote: ActivityLog = {
+          activity: "project",
+          amount: 2,
+          label: "Feature Implementation (PR)",
+          points: 200,
+          timestamp: new Date().toISOString(),
+          note: "Auth flow refactor",
+        };
+        const withoutNote: ActivityLog = {
+          activity: "project",
+          amount: 2,
+          label: "Feature Implementation (PR)",
+          points: 200,
+          timestamp: new Date().toISOString(),
+        };
+        expect(withNote.points).toBe(withoutNote.points);
+      });
+    });
+
+    describe("new activities added in this session", () => {
+      it("should include job-search INT activities", () => {
+        const labels = ACTIVITY_OPTIONS.int.map((a) => a.label);
+        expect(labels).toContain("Flashcard / Retrieval Practice");
+        expect(labels).toContain("Problem Approach Review");
+        expect(labels).toContain("Past Project Review & Documentation");
+        expect(labels).toContain("Algorithm / DS Study Session");
+      });
+
+      it("should include job-search DEX activities", () => {
+        const labels = ACTIVITY_OPTIONS.dex.map((a) => a.label);
+        expect(labels).toContain("Take-Home Assignment");
+        expect(labels).toContain("Writing Tests");
+        expect(labels).toContain("Open Source Contribution (PR Merged)");
+        expect(labels).toContain("Technical Demo / Presentation Prep");
+      });
+
+      it("should include job-search CHA activities", () => {
+        const labels = ACTIVITY_OPTIONS.cha.map((a) => a.label);
+        expect(labels).toContain("Company Research");
+        expect(labels).toContain("Interview Answer Prep");
+        expect(labels).toContain("STAR Story Draft");
+        expect(labels).toContain("STAR Story Refined");
+        expect(labels).toContain("STAR Story Practiced");
+      });
+
+      it("should include new WIS activities", () => {
+        const labels = ACTIVITY_OPTIONS.wis.map((a) => a.label);
+        expect(labels).toContain("Engineering Blog / Case Study");
+        expect(labels).toContain("Technical Talk / YouTube / Conference");
+        expect(labels).toContain("Reading an Unfamiliar Codebase");
+      });
+
+      it("real interview should be worth more than mock for both INT and CHA", () => {
+        const mockTech = ACTIVITY_OPTIONS.int.find((a) => a.label === "Mock Technical Interview")!;
+        const realTech = ACTIVITY_OPTIONS.int.find((a) => a.label === "Real Technical Interview")!;
+        expect(realTech.pointValue).toBeGreaterThan(mockTech.pointValue);
+
+        const mockBehav = ACTIVITY_OPTIONS.cha.find((a) => a.label === "Mock Behavioral Interview")!;
+        const realBehav = ACTIVITY_OPTIONS.cha.find((a) => a.label === "Real Behavioral Interview")!;
+        expect(realBehav.pointValue).toBeGreaterThan(mockBehav.pointValue);
+      });
+
+      it("STAR story points should increase with each stage", () => {
+        const draft = ACTIVITY_OPTIONS.cha.find((a) => a.label === "STAR Story Draft")!;
+        const refined = ACTIVITY_OPTIONS.cha.find((a) => a.label === "STAR Story Refined")!;
+        const practiced = ACTIVITY_OPTIONS.cha.find((a) => a.label === "STAR Story Practiced")!;
+        expect(refined.pointValue).toBeGreaterThan(draft.pointValue);
+        expect(practiced.pointValue).toBeGreaterThan(refined.pointValue);
+      });
     });
   });
 
