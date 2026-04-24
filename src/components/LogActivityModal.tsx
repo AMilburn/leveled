@@ -2,6 +2,17 @@ import { STATS } from "../config/stats";
 import { getActivityMeta, calculatePointsPreview } from "../config/stats";
 import { StatType } from "../config/stats";
 
+const PLURAL_EXCEPTIONS: Record<string, string> = {
+  fix: "fixes",
+  story: "stories",
+  company: "companies",
+  pr: "PRs",
+};
+
+function pluralize(unit: string): string {
+  return PLURAL_EXCEPTIONS[unit] ?? `${unit}s`;
+}
+
 interface Props {
   activityLabel: string;
   amount: string;
@@ -67,7 +78,7 @@ export default function LogActivityModal({
         <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
           <div>
             <label style={{ fontSize: "12px", fontWeight: "600", color: "#444", display: "block", marginBottom: "6px" }}>
-              How many {meta?.unit}s?
+              How many {meta ? pluralize(meta.unit) : ""}?
             </label>
             <input
               type="number"
