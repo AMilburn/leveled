@@ -44,18 +44,49 @@ export default function ScheduleTab({
     day: string;
     time: number;
   } | null>(null);
+  const [pickerNote, setPickerNote] = useState("");
   const wd = getOrCreateWeek(currentWeek);
 
+  const openPicker = (day: string, time: number) => {
+    setPickerNote(wd.slotNotes?.[`${day}-${time}`] ?? "");
+    setPickerSlot({ day, time });
+  };
+
+  const closePicker = () => {
+    if (pickerSlot) {
+      const noteKey = `${pickerSlot.day}-${pickerSlot.time}`;
+      const existing = wd.slotNotes ?? {};
+      const newNotes = pickerNote.trim()
+        ? { ...existing, [noteKey]: pickerNote.trim() }
+        : Object.fromEntries(
+            Object.entries(existing).filter(([k]) => k !== noteKey),
+          );
+      setWeekData((prev) => ({
+        ...prev,
+        [`w${currentWeek}`]: {
+          ...prev[`w${currentWeek}`],
+          slotNotes: newNotes,
+        },
+      }));
+    }
+    setPickerSlot(null);
+  };
+
   const updateSlot = (day: string, timeIdx: number, type: ActivityType) => {
+    const noteKey = `${day}-${timeIdx}`;
+    const existing = wd.slotNotes ?? {};
+    const newNotes = pickerNote.trim()
+      ? { ...existing, [noteKey]: pickerNote.trim() }
+      : Object.fromEntries(
+          Object.entries(existing).filter(([k]) => k !== noteKey),
+        );
     setWeekData((prev) => {
       const updated = { ...prev };
       const key = `w${currentWeek}`;
       updated[key] = {
         ...wd,
-        slots: {
-          ...wd.slots,
-          [day]: [...wd.slots[day]],
-        },
+        slots: { ...wd.slots, [day]: [...wd.slots[day]] },
+        slotNotes: newNotes,
       };
       updated[key].slots[day][timeIdx] = type;
       return updated;
@@ -74,8 +105,8 @@ export default function ScheduleTab({
         mode,
         slots: JSON.parse(
           JSON.stringify(
-            (WEEK_TEMPLATES[mode as keyof typeof WEEK_TEMPLATES]?.template ||
-              WEEK_TEMPLATES.normal.template),
+            WEEK_TEMPLATES[mode as keyof typeof WEEK_TEMPLATES]?.template ||
+              WEEK_TEMPLATES.normal.template,
           ),
         ),
       },
@@ -88,19 +119,27 @@ export default function ScheduleTab({
       [`w${currentWeek}`]: {
         ...prev[`w${currentWeek}`],
         slots: JSON.parse(JSON.stringify(WEEK_TEMPLATES[wd.mode].template)),
+        slotNotes: {},
       },
     }));
   };
 
   const clearWeek = () => {
-    if (!confirm("Remove all scheduled activities? Week type and goals will be kept."))
+    if (
+      !confirm(
+        "Remove all scheduled activities? Week type and goals will be kept.",
+      )
+    )
       return;
-    const blank = Object.fromEntries(DAYS.map((day) => [day, Array(15).fill("free")]));
+    const blank = Object.fromEntries(
+      DAYS.map((day) => [day, Array(15).fill("free")]),
+    );
     setWeekData((prev) => ({
       ...prev,
       [`w${currentWeek}`]: {
         ...prev[`w${currentWeek}`],
         slots: blank,
+        slotNotes: {},
       },
     }));
   };
@@ -120,7 +159,8 @@ export default function ScheduleTab({
 
   const { core, stretch } = calculateHours();
   const coreMax = PROGRESS_SETTINGS[wd.mode]?.coreHoursMax || 21;
-  const withStretchMax = coreMax + (PROGRESS_SETTINGS[wd.mode]?.stretchMax || 0);
+  const withStretchMax =
+    coreMax + (PROGRESS_SETTINGS[wd.mode]?.stretchMax || 0);
 
   return (
     <div className="panel active">
@@ -134,7 +174,12 @@ export default function ScheduleTab({
         </button>
         <span
           className="week-label"
-          style={{ fontSize: "14px", fontWeight: "500", minWidth: "140px", textAlign: "center" }}
+          style={{
+            fontSize: "14px",
+            fontWeight: "500",
+            minWidth: "140px",
+            textAlign: "center",
+          }}
         >
           {weekLabel(currentWeek)}
         </span>
@@ -188,8 +233,18 @@ export default function ScheduleTab({
         </div>
       </div>
 
-      <div className="week-mode-row" style={{ marginTop: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
-        <label style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}>Use template:</label>
+      <div
+        className="week-mode-row"
+        style={{
+          marginTop: "1rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        <label style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}>
+          Use template:
+        </label>
         <select
           value={wd.mode}
           onChange={(e) => setMode(e.target.value as WeekMode)}
@@ -268,14 +323,16 @@ export default function ScheduleTab({
                 const baseActivity = t.replace("stretch-", "");
                 return colorMap[baseActivity] || "#333";
               };
+              const slotNote = wd.slotNotes?.[`${d}-${ti}`];
               return (
                 <div
                   key={`${d}-${ti}`}
-                  onClick={() => setPickerSlot({ day: d, time: ti })}
+                  onClick={() => openPicker(d, ti)}
                   style={{
-                    height: "32px",
+                    height: "40px",
                     borderRadius: "4px",
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: "9px",
@@ -283,8 +340,10 @@ export default function ScheduleTab({
                     textAlign: "center",
                     lineHeight: "1.2",
                     padding: "2px 3px",
+                    gap: "1px",
                     cursor: "pointer",
                     userSelect: "none",
+                    overflow: "hidden",
                     background: isSelected
                       ? "#ddd"
                       : SCHEDULE_CONFIG.typeColors[type],
@@ -298,7 +357,23 @@ export default function ScheduleTab({
                       : "#222",
                   }}
                 >
-                  {SCHEDULE_CONFIG.typeLabels[type]}
+                  <span style={{ lineHeight: 1.2 }}>{SCHEDULE_CONFIG.typeLabels[type]}</span>
+                  {slotNote && (
+                    <span
+                      style={{
+                        fontSize: "6px",
+                        fontWeight: "400",
+                        opacity: 0.6,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: "100%",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {slotNote}
+                    </span>
+                  )}
                 </div>
               );
             }),
@@ -308,17 +383,25 @@ export default function ScheduleTab({
 
       {pickerSlot && (
         <div
+          onClick={closePicker}
           style={{
             position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
+            inset: 0,
+            background: "rgba(0,0,0,0.3)",
+            zIndex: 999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
             background: "white",
             padding: "1rem",
-            border: "2px solid #333",
             borderRadius: "8px",
             zIndex: 1000,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
             minWidth: "300px",
           }}
         >
@@ -399,20 +482,45 @@ export default function ScheduleTab({
               );
             })}
           </div>
+          <div style={{ marginBottom: "0.75rem" }}>
+            <label style={{ fontSize: "11px", fontWeight: "600", color: "#444", display: "block", marginBottom: "4px" }}>
+              Focus note <span style={{ fontWeight: "400", color: "#999" }}>(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={pickerNote}
+              maxLength={120}
+              onChange={(e) => setPickerNote(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") closePicker(); }}
+              placeholder="What to focus on during this block..."
+              style={{
+                width: "100%",
+                padding: "7px 10px",
+                fontSize: "13px",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                boxSizing: "border-box",
+                outline: "none",
+              }}
+            />
+          </div>
           <button
-            onClick={() => setPickerSlot(null)}
+            onClick={closePicker}
             style={{
               padding: "6px 12px",
               fontSize: "11px",
-              background: "#f0f0f0",
-              border: "1px solid #ccc",
+              background: "#534AB7",
+              color: "white",
+              border: "none",
               borderRadius: "3px",
               cursor: "pointer",
               width: "100%",
+              fontWeight: "500",
             }}
           >
-            Close
+            Done
           </button>
+        </div>
         </div>
       )}
 
@@ -455,7 +563,8 @@ export default function ScheduleTab({
             style={{
               height: "100%",
               background: "#0F6E56",
-              width: Math.min(100, ((core + stretch) / withStretchMax) * 100) + "%",
+              width:
+                Math.min(100, ((core + stretch) / withStretchMax) * 100) + "%",
             }}
           ></div>
         </div>

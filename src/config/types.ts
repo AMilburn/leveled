@@ -12,7 +12,6 @@ export type BaseActivity =
   | "project"
   | "stories"
   | "applications"
-  | "review"
   | "networking"
   | "retrieval"
   | "workout"
@@ -78,6 +77,7 @@ export interface Week {
   counts?: Record<string, number>;
   reflection?: string;
   activityLogs?: ActivityLog[];
+  slotNotes?: Record<string, string>; // keyed "Day-timeIdx", e.g. "Mon-4"
 }
 
 export interface WeekData {
