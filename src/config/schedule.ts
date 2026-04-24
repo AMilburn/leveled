@@ -91,17 +91,18 @@ export const WEEK_TEMPLATES: WeekTemplates = {
   normal: {
     template: generateWeekTemplate(
       [
-        { activity: "coding", days: ["Mon", "Tue", "Wed", "Fri"], hours: 3 },
-        { activity: "system", days: ["Mon", "Fri"], hours: 2 },
-        { activity: "depth", days: ["Mon", "Wed", "Fri"], hours: 1 },
-        { activity: "project", days: ["Thu"], hours: 2 },
-        { activity: "applications", days: ["Wed", "Thu"], hours: 1 },
-        { activity: "stories", days: ["Wed"], hours: 1 },
-        { activity: "workout", days: ["Mon", "Tue", "Sat"], hours: 1 },
-        { activity: "retrieval", days: ["Mon", "Thu"], hours: 1 },
+        { activity: "coding", days: ["Mon", "Tue", "Wed", "Fri"], hours: 1 },
+        { activity: "system", days: ["Mon", "Wed", "Fri"], hours: 1 },
+        { activity: "depth", days: ["Mon", "Tue"], hours: 1 },
+        { activity: "project", days: ["Mon", "Tue", "Thu", "Fri"], hours: 1 },
+        { activity: "stories", days: ["Mon", "Wed"], hours: 1 },
+        { activity: "applications", days: ["Thu"], hours: 1 },
+        { activity: "retrieval", days: ["Mon", "Wed", "Fri"], hours: 1 },
+        { activity: "study", days: ["Tue", "Sat"], hours: 1 },
+        { activity: "workout", days: ["Mon", "Wed", "Sat"], hours: 1 },
       ] as ActivityPlacement[],
       [
-        { activity: "project", days: ["Tue", "Sat"], hours: 1 },
+        { activity: "coding", days: ["Sat"], hours: 1 },
         { activity: "depth", days: ["Sun"], hours: 1 },
         { activity: "workout", days: ["Fri"], hours: 1 },
       ] as ActivityPlacement[],
@@ -111,17 +112,15 @@ export const WEEK_TEMPLATES: WeekTemplates = {
   travel: {
     template: generateWeekTemplate(
       [
-        { activity: "coding", days: ["Mon", "Wed"], hours: 2 },
+        { activity: "coding", days: ["Mon", "Wed"], hours: 1 },
         { activity: "system", days: ["Tue"], hours: 1 },
-        { activity: "depth", days: ["Thu"], hours: 2 },
-        { activity: "project", days: ["Tue"], hours: 1 },
-        { activity: "applications", days: ["Tue", "Wed"], hours: 1 },
-        { activity: "workout", days: ["Mon", "Wed", "Sat"], hours: 1 },
-        {
-          activity: "retrieval",
-          days: ["Mon", "Tue", "Wed", "Thu"],
-          hours: 1,
-        },
+        { activity: "depth", days: ["Thu"], hours: 1 },
+        { activity: "project", days: ["Mon", "Wed"], hours: 1 },
+        { activity: "stories", days: ["Tue", "Wed"], hours: 1 },
+        { activity: "applications", days: ["Thu"], hours: 1 },
+        { activity: "retrieval", days: ["Mon", "Tue", "Wed"], hours: 1 },
+        { activity: "study", days: ["Thu"], hours: 1 },
+        { activity: "workout", days: ["Wed", "Sat"], hours: 1 },
       ] as ActivityPlacement[],
       [{ activity: "coding", days: ["Sat"], hours: 1 }] as ActivityPlacement[],
     ),
@@ -130,16 +129,15 @@ export const WEEK_TEMPLATES: WeekTemplates = {
   hard: {
     template: generateWeekTemplate(
       [
-        { activity: "coding", days: ["Mon", "Tue", "Wed", "Fri"], hours: 1 },
-        { activity: "system", days: ["Mon"], hours: 1 },
-        { activity: "project", days: ["Tue"], hours: 1 },
+        { activity: "coding", days: ["Mon", "Wed"], hours: 1 },
+        { activity: "system", days: ["Tue"], hours: 1 },
+        { activity: "depth", days: ["Thu"], hours: 1 },
+        { activity: "project", days: ["Mon", "Wed"], hours: 1 },
+        { activity: "stories", days: ["Fri"], hours: 1 },
         { activity: "applications", days: ["Fri"], hours: 1 },
-        { activity: "workout", days: ["Mon", "Tue", "Fri", "Sat"], hours: 1 },
-        {
-          activity: "retrieval",
-          days: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-          hours: 1,
-        },
+        { activity: "retrieval", days: ["Mon", "Wed"], hours: 1 },
+        { activity: "study", days: ["Thu"], hours: 1 },
+        { activity: "workout", days: ["Mon", "Wed", "Sat"], hours: 1 },
       ] as ActivityPlacement[],
       [],
     ),
