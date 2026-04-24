@@ -58,15 +58,19 @@ export default function MainApp({
   const [wins, setWins] = useState<Win[]>(DEFAULT_WINS);
   const [loading, setLoading] = useState(true);
   const isLoadingRef = useRef(true);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const weeksSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const kanbanSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const winsSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipKanbanSyncRef = useRef(false);
   const skipWinsSyncRef = useRef(false);
+  const handleOnlineRef = useRef(() => {});
 
   // Load data on mount
   useEffect(() => {
     loadData();
-    window.addEventListener("online", handleOnline);
-    return () => window.removeEventListener("online", handleOnline);
+    const onOnline = () => handleOnlineRef.current();
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
   }, []);
 
   // Persist the active tab across page reloads (UI state only, no DB sync needed)
@@ -79,14 +83,21 @@ export default function MainApp({
     localStorage.setItem("leveled_currentWeek", currentWeek.toString());
   }, [currentWeek]);
 
+  // Keep handleOnlineRef current so the event listener (registered once) always
+  // calls syncAllData with the latest state, avoiding a stale closure.
+  useEffect(() => {
+    handleOnlineRef.current = () => syncAllData(weekData, kanban, wins);
+  }, [weekData, kanban, wins]);
+
   // Persist week data to localStorage immediately, then debounce the Supabase sync.
   // Debouncing prevents a burst of network calls when multiple weeks are updated
   // in quick succession (e.g. getOrCreateWeek firing on first render).
   useEffect(() => {
     if (isLoadingRef.current) return;
     localStorage.setItem("leveled_weeks", JSON.stringify(weekData));
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => syncWeeks(weekData), 300);
+    if (weeksSaveTimerRef.current) clearTimeout(weeksSaveTimerRef.current);
+    weeksSaveTimerRef.current = setTimeout(() => syncWeeks(weekData), 300);
+    return () => { if (weeksSaveTimerRef.current) clearTimeout(weeksSaveTimerRef.current); };
   }, [weekData]);
 
   // Persist kanban to localStorage immediately, then debounce the Supabase sync.
@@ -95,12 +106,13 @@ export default function MainApp({
   useEffect(() => {
     if (isLoadingRef.current) return;
     localStorage.setItem("leveled_kanban", JSON.stringify(kanban));
+    if (kanbanSaveTimerRef.current) clearTimeout(kanbanSaveTimerRef.current);
     if (skipKanbanSyncRef.current) {
       skipKanbanSyncRef.current = false;
       return;
     }
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => syncKanban(kanban), 300);
+    kanbanSaveTimerRef.current = setTimeout(() => syncKanban(kanban), 300);
+    return () => { if (kanbanSaveTimerRef.current) clearTimeout(kanbanSaveTimerRef.current); };
   }, [kanban]);
 
   // Persist wins to localStorage immediately, then debounce the Supabase sync.
@@ -109,12 +121,13 @@ export default function MainApp({
   useEffect(() => {
     if (isLoadingRef.current) return;
     localStorage.setItem("leveled_wins", JSON.stringify(wins));
+    if (winsSaveTimerRef.current) clearTimeout(winsSaveTimerRef.current);
     if (skipWinsSyncRef.current) {
       skipWinsSyncRef.current = false;
       return;
     }
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => syncWins(wins), 300);
+    winsSaveTimerRef.current = setTimeout(() => syncWins(wins), 300);
+    return () => { if (winsSaveTimerRef.current) clearTimeout(winsSaveTimerRef.current); };
   }, [wins]);
 
   async function loadData(): Promise<void> {
@@ -157,10 +170,6 @@ export default function MainApp({
 
     isLoadingRef.current = false;
     setLoading(false);
-  }
-
-  function handleOnline(): void {
-    syncAllData(weekData, kanban, wins);
   }
 
   function handleDeleteKanban(id: string): void {
