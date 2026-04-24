@@ -15,7 +15,8 @@ export type BaseActivity =
   | "review"
   | "networking"
   | "retrieval"
-  | "workout";
+  | "workout"
+  | "study";
 
 // Stretch-only activity types
 export type StretchActivity = `stretch-${BaseActivity}`;

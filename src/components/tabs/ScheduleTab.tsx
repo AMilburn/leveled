@@ -261,8 +261,9 @@ export default function ScheduleTab({
                   stories: "#b85a46",
                   workout: "#2d8a2d",
                   applications: "#3a5a9a",
-                  networking: "#3a5a9a",
+                  networking: "#a8457a",
                   retrieval: "#8a7a5a",
+                  study: "#c9a800",
                 };
                 const baseActivity = t.replace("stretch-", "");
                 return colorMap[baseActivity] || "#333";
@@ -366,8 +367,9 @@ export default function ScheduleTab({
                   stories: "#b85a46",
                   workout: "#2d8a2d",
                   applications: "#3a5a9a",
-                  networking: "#3a5a9a",
+                  networking: "#a8457a",
                   retrieval: "#8a7a5a",
+                  study: "#c9a800",
                 };
                 const baseActivity = t.replace("stretch-", "");
                 return colorMap[baseActivity] || "#333";

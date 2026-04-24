@@ -42,6 +42,7 @@ function generateWeekTemplate(
     stories: TIME_SLOTS.afternoon,
     project: TIME_SLOTS.evening,
     retrieval: TIME_SLOTS.evening,
+    study: TIME_SLOTS.afternoon,
   };
 
   // Place core activities
@@ -210,26 +211,26 @@ export function calculateStretchHoursFromTemplates(): Record<WeekMode, number> {
 
 // Single source of truth for all activity metadata (label + color)
 const ACTIVITY_METADATA = {
-  coding: { label: "Coding", color: "#dcdaf5" },
-  depth: { label: "Tech depth", color: "#d0f0ed" },
+  coding: { label: "Code Practice", color: "#dcdaf5" },
+  depth: { label: "Tech Depth", color: "#d0f0ed" },
   system: { label: "System Design", color: "#f0d9f0" },
-  project: { label: "Pet project", color: "#ffead4" },
+  project: { label: "Build", color: "#ffead4" },
   stories: { label: "Interview prep", color: "#f0d9d0" },
   applications: { label: "Applications", color: "#d9e8f5" },
-  review: { label: "Light review", color: "#efe8e0" },
-  networking: { label: "Networking", color: "#e0e8f5" },
+  networking: { label: "Networking", color: "#f5d9e8" },
   retrieval: { label: "Retrieval", color: "#e8d4b0" },
   workout: { label: "Workout", color: "#d4f1d4" },
-  "stretch-coding": { label: "+ Coding", color: "#f0eef8" },
-  "stretch-depth": { label: "+ Depth", color: "#e8f5f3" },
+  study: { label: "Study", color: "#fdf3d0" },
+  "stretch-coding": { label: "+ Code Practice", color: "#f0eef8" },
+  "stretch-depth": { label: "+ Tech Depth", color: "#e8f5f3" },
   "stretch-system": { label: "+ System Design", color: "#f8e8f8" },
-  "stretch-project": { label: "+ Project", color: "#fff5e8" },
-  "stretch-stories": { label: "+ Stories", color: "#f8e8e0" },
-  "stretch-workout": { label: "+ Workout", color: "#e8f5e8" },
+  "stretch-project": { label: "+ Build", color: "#fff5e8" },
+  "stretch-stories": { label: "+ Interview Prep", color: "#f8e8e0" },
   "stretch-applications": { label: "+ Applications", color: "#e8eff8" },
-  "stretch-networking": { label: "+ Networking", color: "#e8eff8" },
+  "stretch-networking": { label: "+ Networking", color: "#fae8f0" },
   "stretch-retrieval": { label: "+ Retrieval", color: "#f0e8d8" },
-  "stretch-review": { label: "+ Review", color: "#f5f5f0" },
+  "stretch-workout": { label: "+ Workout", color: "#e8f5e8" },
+  "stretch-study": { label: "+ Study", color: "#fef9e8" },
   free: { label: "", color: "#f5f5f5" },
   blocked: { label: "–", color: "#e8e8e8" },
 } as const;
