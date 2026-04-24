@@ -5,7 +5,9 @@ import { KanbanTask } from "./types";
 // Generate kanban tags dynamically from core activities
 export const KANBAN_TAGS = CORE_ACTIVITIES.map((activity) => ({
   name: activity,
+  label: SCHEDULE_CONFIG.typeLabels[activity],
   bg: SCHEDULE_CONFIG.typeColors[activity],
+  text: "#333",
 }));
 
 // Default kanban tasks - Customize these to match your development focus

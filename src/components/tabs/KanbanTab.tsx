@@ -61,7 +61,7 @@ export default function KanbanTab({ kanban, setKanban, onDelete }: { kanban: Kan
           onKeyDown={(e) => e.key === 'Enter' && addTask()} style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '0.9rem' }} />
         <select value={newTaskTag} onChange={(e) => setNewTaskTag(e.target.value)} style={{ padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}>
           {KANBAN_TAGS.map(tag => (
-            <option key={tag.name} value={tag.name}>{tag.name.charAt(0).toUpperCase() + tag.name.slice(1)}</option>
+            <option key={tag.name} value={tag.name}>{tag.label}</option>
           ))}
         </select>
         <button onClick={addTask} style={{ padding: '8px 16px', background: '#534AB7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9rem' }}>Add</button>
@@ -94,7 +94,7 @@ export default function KanbanTab({ kanban, setKanban, onDelete }: { kanban: Kan
                       <>
                         <div style={{ fontWeight: '500', marginBottom: '4px', color: '#222' }}>{card.title}</div>
                         <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '3px', fontSize: '0.7rem', background: tagColor.bg, color: tagColor.text, marginBottom: '4px' }}>
-                          {card.tag}
+                          {KANBAN_TAGS.find(t => t.name === card.tag)?.label ?? card.tag}
                         </span>
                         {card.note && <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px', fontStyle: 'italic' }}>{card.note}</div>}
                         <div style={{ display: 'flex', gap: '3px', marginTop: '8px', flexWrap: 'wrap' }}>
