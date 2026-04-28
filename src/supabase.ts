@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { WeekData, KanbanTask, Win } from "./config";
+import { WeekData, KanbanTask, Win, Week } from "./config";
 
 // Initialize Supabase only if credentials are provided
 export const supabase: SupabaseClient | null =
@@ -13,15 +13,8 @@ export const supabase: SupabaseClient | null =
 
 export let isOnline = true;
 
-// Track online/offline status
-window.addEventListener("online", () => {
-  isOnline = true;
-  console.log("Back online - syncing...");
-});
-window.addEventListener("offline", () => {
-  isOnline = false;
-  console.log("Offline - using localStorage");
-});
+window.addEventListener("online", () => { isOnline = true; });
+window.addEventListener("offline", () => { isOnline = false; });
 
 // Cache the session so repeated calls don't hit the network
 let cachedUserId: string | null = null;
@@ -34,29 +27,23 @@ async function getUserId(): Promise<string | null> {
   return cachedUserId;
 }
 
-// Clear cache on sign out
 if (supabase) {
   supabase.auth.onAuthStateChange((event) => {
     if (event === "SIGNED_OUT") cachedUserId = null;
   });
 }
 
-export async function syncWeeks(weekData: WeekData): Promise<void> {
+// Upsert a single week. The full Week object is stored as a jsonb blob so
+// adding new fields to the type never requires a sync-layer change.
+export async function syncWeek(weekNum: number, week: Week): Promise<void> {
   if (!supabase || !isOnline) return;
   const userId = await getUserId();
   if (!userId) return;
-  const weeksToSync = Object.entries(weekData).map(([key, data]) => ({
-    week_number: parseInt(key.replace("w", "")),
-    week_type: data.mode,
-    schedule: data.slots,
-    counts: data.counts,
-    reflection: data.reflection,
-    activity_logs: data.activityLogs || [],
-    user_id: userId,
-  }));
-  if (weeksToSync.length === 0) return;
-  const { error } = await supabase.from("weeks").upsert(weeksToSync, { onConflict: "user_id,week_number" });
-  if (error) console.error("Sync error (weeks):", error);
+  const { error } = await supabase.from("weeks").upsert(
+    { week_number: weekNum, user_id: userId, data: week },
+    { onConflict: "user_id,week_number" },
+  );
+  if (error) console.error("Sync error (week):", error);
 }
 
 export async function syncKanban(kanban: KanbanTask[]): Promise<void> {
@@ -83,14 +70,19 @@ export async function syncWins(wins: Win[]): Promise<void> {
   if (error) console.error("Sync error (wins):", error);
 }
 
-// Kept for the handleOnline full re-sync
 export async function syncAllData(
   weekData: WeekData,
   kanban: KanbanTask[],
   wins: Win[],
 ): Promise<boolean> {
   try {
-    await Promise.all([syncWeeks(weekData), syncKanban(kanban), syncWins(wins)]);
+    await Promise.all([
+      ...Object.entries(weekData).map(([key, week]) =>
+        syncWeek(parseInt(key.replace("w", "")), week),
+      ),
+      syncKanban(kanban),
+      syncWins(wins),
+    ]);
     return true;
   } catch (error) {
     console.error("Sync error:", error);
@@ -98,81 +90,50 @@ export async function syncAllData(
   }
 }
 
-// Delete a single kanban task from Supabase
 export async function deleteKanbanTask(id: string): Promise<void> {
   if (!supabase || !isOnline) return;
   await supabase.from("kanban_tasks").delete().eq("id", id);
 }
 
-// Delete a single win from Supabase
 export async function deleteWin(id: string): Promise<void> {
   if (!supabase || !isOnline) return;
   await supabase.from("wins").delete().eq("id", id);
 }
 
-// Load all data from Supabase
 export async function loadFromSupabase(): Promise<{
   weekData: WeekData;
   kanban: KanbanTask[];
   wins: Win[];
 } | null> {
-  if (!supabase) return null;
-  if (!isOnline) return null;
+  if (!supabase || !isOnline) return null;
 
   try {
-    // Get current user
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     if (!session) return null;
-
     const userId = session.user.id;
 
-    // Load weeks for current user
-    const { data: weeksData, error: weeksError } = await supabase
-      .from("weeks")
-      .select("*")
-      .eq("user_id", userId);
-    if (weeksError) throw weeksError;
+    const [weeksResult, kanbanResult, winsResult] = await Promise.all([
+      supabase.from("weeks").select("week_number, data").eq("user_id", userId),
+      supabase.from("kanban_tasks").select("*").eq("user_id", userId),
+      supabase.from("wins").select("id, content, created_at").eq("user_id", userId).order("created_at", { ascending: false }),
+    ]);
 
-    // Load kanban tasks for current user
-    const { data: kanbanData, error: kanbanError } = await supabase
-      .from("kanban_tasks")
-      .select("*")
-      .eq("user_id", userId);
-    if (kanbanError) throw kanbanError;
+    if (weeksResult.error) throw weeksResult.error;
+    if (kanbanResult.error) throw kanbanResult.error;
+    if (winsResult.error) throw winsResult.error;
 
-    // Load wins for current user
-    const { data: winsData, error: winsError } = await supabase
-      .from("wins")
-      .select("id, content, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-    if (winsError) throw winsError;
-
-    // Transform back to app format
     const weekData: WeekData = {};
-    if (weeksData) {
-      weeksData.forEach((week) => {
-        weekData[`w${week.week_number}`] = {
-          slots: week.schedule,
-          mode: week.week_type,
-          counts: week.counts || {},
-          reflection: week.reflection || "",
-          activityLogs: week.activity_logs || [],
-        };
-      });
-    }
+    weeksResult.data?.forEach((row) => {
+      weekData[`w${row.week_number}`] = row.data as Week;
+    });
 
-    const wins: Win[] = winsData
-      ? winsData.map((w) => ({ id: w.id, content: w.content, created_at: w.created_at }))
-      : [];
+    const wins: Win[] = winsResult.data?.map((w) => ({
+      id: w.id,
+      content: w.content,
+      created_at: w.created_at,
+    })) ?? [];
 
-    return {
-      weekData,
-      kanban: kanbanData || [],
-      wins,
-    };
+    return { weekData, kanban: kanbanResult.data ?? [], wins };
   } catch (error) {
     console.error("Load error:", error);
     return null;

@@ -3,7 +3,7 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 import {
   syncAllData,
-  syncWeeks,
+  syncWeek,
   syncKanban,
   syncWins,
   loadFromSupabase,
@@ -53,7 +53,15 @@ export default function MainApp({
     return saved ? parseInt(saved) : getCurrentWeek();
   });
   const [pWeek] = useState(getCurrentWeek());
-  const [weekData, setWeekData] = useState<WeekData>({});
+  const [weekData, setWeekData_] = useState<WeekData>({});
+  const setWeekData = (updater: (prev: WeekData) => WeekData) => {
+    setWeekData_((prev) => {
+      const next = updater(prev);
+      const key = Object.keys(next).find((k) => next[k] !== prev[k]);
+      if (key) dirtyWeekKeyRef.current = key;
+      return next;
+    });
+  };
   const [kanban, setKanban] = useState(KANBAN_TASKS);
   const [wins, setWins] = useState<Win[]>(DEFAULT_WINS);
   const [loading, setLoading] = useState(true);
@@ -64,6 +72,7 @@ export default function MainApp({
   const skipKanbanSyncRef = useRef(false);
   const skipWinsSyncRef = useRef(false);
   const handleOnlineRef = useRef(() => {});
+  const dirtyWeekKeyRef = useRef<string | null>(null);
 
   // Load data on mount
   useEffect(() => {
@@ -96,7 +105,12 @@ export default function MainApp({
     if (isLoadingRef.current) return;
     localStorage.setItem("leveled_weeks", JSON.stringify(weekData));
     if (weeksSaveTimerRef.current) clearTimeout(weeksSaveTimerRef.current);
-    weeksSaveTimerRef.current = setTimeout(() => syncWeeks(weekData), 300);
+    weeksSaveTimerRef.current = setTimeout(() => {
+      const key = dirtyWeekKeyRef.current;
+      if (key && weekData[key]) {
+        syncWeek(parseInt(key.replace("w", "")), weekData[key]);
+      }
+    }, 300);
     return () => { if (weeksSaveTimerRef.current) clearTimeout(weeksSaveTimerRef.current); };
   }, [weekData]);
 
@@ -134,7 +148,7 @@ export default function MainApp({
     try {
       const supabaseData = await loadFromSupabase();
       if (supabaseData && Object.keys(supabaseData.weekData).length > 0) {
-        setWeekData(supabaseData.weekData);
+        setWeekData_( supabaseData.weekData);
         setKanban(
           supabaseData.kanban && supabaseData.kanban.length > 0
             ? supabaseData.kanban
@@ -155,7 +169,7 @@ export default function MainApp({
 
     try {
       const w = localStorage.getItem("leveled_weeks");
-      if (w) setWeekData(JSON.parse(w));
+      if (w) setWeekData_(JSON.parse(w));
       const k = localStorage.getItem("leveled_kanban");
       const parsedKanban = k ? JSON.parse(k) : null;
       setKanban(
