@@ -702,7 +702,7 @@ export default function ScheduleTab({
                     color: isMet ? "#1b5e20" : "#c62828",
                   }}
                 >
-                  <span>{activity.replace("-", " ")}</span>
+                  <span>{SCHEDULE_CONFIG.typeLabels[activity as keyof typeof SCHEDULE_CONFIG.typeLabels] ?? activity.replace("-", " ")}</span>
                   <span style={{ fontWeight: "600" }}>
                     {actualHours}/{goalHours} hrs
                   </span>
